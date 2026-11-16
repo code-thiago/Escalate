@@ -230,17 +230,11 @@ describe("Milestone M2: Portfolio Consolidation & 5-Tier Liquidity Ladder", () =
     });
 
     it("falls back to liquidityDays when liquidityTier is omitted or empty", () => {
-      // @ts-expect-error testing missing liquidityTier fallback
       const posD0 = createMockPosition({ liquidityTier: undefined, liquidityDays: 0, currentNetCents: 100n });
-      // @ts-expect-error testing missing liquidityTier fallback
       const posD1 = createMockPosition({ liquidityTier: undefined, liquidityDays: 3, currentNetCents: 200n });
-      // @ts-expect-error testing missing liquidityTier fallback
       const posD5 = createMockPosition({ liquidityTier: undefined, liquidityDays: 5, currentNetCents: 300n });
-      // @ts-expect-error testing missing liquidityTier fallback
       const posD6 = createMockPosition({ liquidityTier: undefined, liquidityDays: 6, currentNetCents: 400n });
-      // @ts-expect-error testing missing liquidityTier fallback
       const posD30 = createMockPosition({ liquidityTier: undefined, liquidityDays: 30, currentNetCents: 500n });
-      // @ts-expect-error testing missing liquidityTier fallback
       const posDPlus = createMockPosition({ liquidityTier: undefined, liquidityDays: 45, currentNetCents: 600n });
 
       expect(resolveLiquidityTier(posD0)).toBe("D_0");

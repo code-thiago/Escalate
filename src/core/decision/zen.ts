@@ -315,6 +315,8 @@ class ZenServiceImpl implements ZenService {
       "goal-allocation-guard",
       "product-critical-analysis",
       "portfolio-quantum-health",
+      "cvm-suitability-guard",
+      "token-metering-gate",
     ];
     for (const graph of graphs) {
       await this.loadRawGraph(graph);

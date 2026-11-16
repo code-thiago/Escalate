@@ -1,0 +1,7 @@
+{
+  "name": "@escalate/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/asset-vector.ts",
+  "types": "./src/asset-vector.ts"
+}

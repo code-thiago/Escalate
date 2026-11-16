@@ -25,6 +25,15 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@escalate/contracts": [
+        "./packages/contracts/src/asset-vector.ts"
+      ],
+      "@escalate/contracts/*": [
+        "./packages/contracts/src/*"
+      ],
+      "@escalate/ui-tokens/*": [
+        "./packages/ui-tokens/src/*"
       ]
     }
   },

@@ -57,6 +57,8 @@ const PRIMARY_TABS: NavItem[] = [
   },
 ];
 
+export { EscalateTerminalShell } from "./EscalateTerminalShell";
+
 export function PlatformShell({
   children,
   title,

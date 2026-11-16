@@ -1,0 +1,13 @@
+title = "Escalate Zero-Secret-Leak Policy (ADR-001)"
+
+[[rules]]
+id = "binance-api-key"
+description = "Binance API Key or Secret detection"
+regex = '''(?i)(binance[a-z0-9_ .\-,]{0,25})(=|>|:=|\|\|:|<=|=>|:).{0,5}['\"]([a-zA-Z0-9]{64})['\"]'''
+tags = ["key", "binance", "crypto"]
+
+[[rules]]
+id = "llm-provider-keys"
+description = "Gemini / Anthropic / OpenAI API Keys"
+regex = '''(AIza[0-9A-Za-z\-_]{35}|sk-ant-api03-[a-zA-Z0-9\-_]{80,})'''
+tags = ["key", "llm"]

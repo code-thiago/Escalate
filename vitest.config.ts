@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"),
+      "@escalate/contracts": path.resolve(__dirname, "./packages/contracts/src/asset-vector.ts"),
       "server-only": path.resolve(__dirname, "./tests/mocks/server-only.ts"),
     },
   },
@@ -14,6 +15,8 @@ export default defineConfig({
       "src/**/*.test.ts",
       "src/**/*.test.tsx",
       "tests/**/*.test.ts",
+      "apps/**/*.test.ts",
+      "packages/**/*.test.ts",
     ],
     exclude: [
       "node_modules/**",
