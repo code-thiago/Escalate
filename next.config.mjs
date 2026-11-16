@@ -1,5 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ['@gorules/zen-engine'],
+  async redirects() {
+    return [
+      {
+        source: '/app',
+        destination: '/investimentos/objetivos',
+        permanent: true,
+      },
+      {
+        source: '/app/comparador',
+        destination: '/produtos/renda-fixa',
+        permanent: true,
+      },
+      {
+        source: '/app/minhas-simulacoes',
+        destination: '/investimentos/objetivos',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

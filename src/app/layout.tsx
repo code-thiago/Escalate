@@ -14,8 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Simulador Financeiro",
-  description: "Simulador de juros compostos, comparador de investimentos e cotações em tempo real",
+  title: "Escalate — Quantum Wealth & Market Intelligence",
+  description: "Plataforma quantitativa de acompanhamento patrimonial, comparador de investimentos, simulador de juros e motor preditivo DTQW + GoRules ZEN",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

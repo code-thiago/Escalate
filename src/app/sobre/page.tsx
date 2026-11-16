@@ -1,25 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import EscalateLogo from "@/src/components/brand/EscalateLogo";
 
 export const metadata: Metadata = {
-  title: "Sobre o Projeto | Project Midas",
-  description: "Conheça a arquitetura, objetivos matemáticos e stack técnica do Project Midas — Simulador Financeiro.",
+  title: "Sobre o Projeto | Escalate",
+  description: "Conheça a arquitetura, objetivos matemáticos e stack técnica do Escalate — Simulador Financeiro & Inteligencia Quantitativa.",
 };
 
 export default function SobrePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Cabeçalho Simplificado */}
+      {/* Cabeçalho Simplificado com Identidade Escalate */}
       <header className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 flex items-center justify-between">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
-        >
-          <span aria-hidden="true">&larr;</span> Voltar ao início
-        </Link>
+        <div className="flex items-center gap-4">
+          <EscalateLogo size="md" href="/" />
+          <Link
+            href="/"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted"
+          >
+            <span aria-hidden="true">&larr;</span> Voltar ao início
+          </Link>
+        </div>
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
-          Documentação
+          Documentação Técnica
         </span>
       </header>
 
@@ -29,7 +33,7 @@ export default function SobrePage() {
         <section className="space-y-5 text-center sm:text-left">
           <div className="space-y-3">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-              Project Midas — Simulador Financeiro
+              Escalate — Simulador Financeiro & Inteligencia Quantitativa
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
               Uma ferramenta de simulação e comparativo de investimentos orientada pelo rigor matemático, respeito à legislação fiscal brasileira e decisões de engenharia pragmáticas.
@@ -59,7 +63,7 @@ export default function SobrePage() {
           </h2>
           <div className="space-y-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
             <p>
-              O diferencial desta aplicação não é consumir uma API de cotação — integrar endpoints externos é algo que qualquer um faz. O que o Project Midas demonstra é um entendimento sólido da lógica financeira e fiscal real por trás da tela.
+              O diferencial desta aplicação não é consumir uma API de cotação — integrar endpoints externos é algo que qualquer um faz. O que o Escalate demonstra é um entendimento sólido da lógica financeira e fiscal real por trás da tela.
             </p>
             <p>
               Em vez de adotar aproximações simplificadas que geram resultados inconsistentes com o mercado real, o projeto foca no rigor das regras brasileiras:
@@ -244,7 +248,7 @@ export default function SobrePage() {
       {/* Rodapé simples */}
       <footer className="w-full border-t border-border mt-12 py-6 text-center text-xs text-muted-foreground">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span>Project Midas &copy; Todos os direitos reservados.</span>
+          <span>Escalate &copy; Todos os direitos reservados.</span>
           <Link
             href="/"
             className="hover:text-foreground transition-colors"

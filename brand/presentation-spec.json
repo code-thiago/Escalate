@@ -1,0 +1,27 @@
+{
+  "brand": "Escalate",
+  "tagline": "Financial Intelligence & Wealth Compounding",
+  "brief": "Identidade visual para a plataforma Escalate: cálculos e projeções patrimoniais em juros compostos com aritmética de inteiros (zero floating-point drift) e conformidade fiscal brasileira.",
+  "adjectives": ["Preciso", "Arquitetural", "Escalável", "Sólido", "Fintech"],
+  "industry": "finance",
+  "brand_color": "#6366F1",
+  "greyscale": false,
+  "final": true,
+  "round": 1,
+  "nav": ["Juros Compostos", "Comparador", "Minhas Simulações", "Documentação"],
+  "concepts": [
+    {
+      "name": "Stepped E (E Escalonado)",
+      "symbol": "concept-a.svg",
+      "lockup": "escalate-lockup.svg",
+      "avatar": "variants/escalate-symbol-app-icon.svg",
+      "idea": "Glifo arquitetural onde cada tier expande 28px em harmonia aritmética perfeita com espaçamentos uniformes de 28px.",
+      "rationale": [
+        "A coluna esquerda sólida ancora o capital inicial como fundação estável.",
+        "A expansão horizontal em três degraus (112px, 140px e 168px) materializa a ascensão exponencial dos juros compostos sem apelar para setas genéricas de mercado financeiro.",
+        "Geometria pura com score 100/100 na auditoria vetorial e reconhecimento imediato tanto como letra 'E' quanto como escala ascendente."
+      ]
+    }
+  ],
+  "recommendation": "O Conceito 1 (Stepped E) é a direção definitiva aprovada pelo usuário para o Escalate, proporcionando coerência total com a paleta Indigo do Design System e excelente desempenho em micro-resoluções (favicon 16px/32px e app icon)."
+}

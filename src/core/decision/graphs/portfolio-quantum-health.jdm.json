@@ -1,0 +1,217 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input_quantum_health",
+      "name": "Quantum Health Input Context",
+      "type": "inputNode",
+      "position": {
+        "x": 60,
+        "y": 140
+      }
+    },
+    {
+      "id": "dt_portfolio_quantum_health",
+      "name": "Portfolio Quantum Health Matrix",
+      "type": "decisionTableNode",
+      "position": {
+        "x": 340,
+        "y": 140
+      },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "in_entropy",
+            "name": "Von Neumann Entropy",
+            "field": "vonNeumannEntropy",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_coherence",
+            "name": "Systemic Coherence Index",
+            "field": "systemicCoherenceIndex",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_d0_bps",
+            "name": "D+0 Liquidity Buffer (bps)",
+            "field": "d0LiquidityBps",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_hhi",
+            "name": "HHI Concentration Index",
+            "field": "hhiConcentration",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out_health_score",
+            "name": "Health Score",
+            "field": "healthScore"
+          },
+          {
+            "id": "out_risk_grade",
+            "name": "Systemic Risk Grade",
+            "field": "systemicRiskGrade"
+          },
+          {
+            "id": "out_rebalance",
+            "name": "Rebalance Required",
+            "field": "rebalanceRequired"
+          },
+          {
+            "id": "out_actions",
+            "name": "Actions",
+            "field": "actions"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "r_entanglement_concentration_shock",
+            "_description": "Catastrophic correlation collapse and high concentration",
+            "in_entropy": "",
+            "in_coherence": "> 0.70",
+            "in_d0_bps": "",
+            "in_hhi": "> 2500",
+            "out_health_score": "20",
+            "out_risk_grade": "'CRITICAL'",
+            "out_rebalance": "true",
+            "out_actions": "'URGENT_DECORRELATE_ENTANGLED_POSITIONS,REDUCE_CONCENTRATION_BELOW_1500_HHI'"
+          },
+          {
+            "_id": "r_systemic_entanglement_shock",
+            "_description": "Systemic entanglement alarm when assets collapse into single risk factor",
+            "in_entropy": "",
+            "in_coherence": "> 0.70",
+            "in_d0_bps": "",
+            "in_hhi": "",
+            "out_health_score": "30",
+            "out_risk_grade": "'CRITICAL'",
+            "out_rebalance": "true",
+            "out_actions": "'PORTFOLIO_ENTANGLEMENT_DETECTED,DIVERSIFY_INTO_ORTHOGONAL_RISK_FACTORS'"
+          },
+          {
+            "_id": "r_acute_liquidity_concentration",
+            "_description": "Acute liquidity buffer exhaustion (< 300 bps) and high concentration",
+            "in_entropy": "",
+            "in_coherence": "",
+            "in_d0_bps": "< 300",
+            "in_hhi": "> 2500",
+            "out_health_score": "35",
+            "out_risk_grade": "'CRITICAL'",
+            "out_rebalance": "true",
+            "out_actions": "'INJECT_D0_LIQUIDITY_BUFFER_MIN_500_BPS,REDUCE_TOP_HOLDINGS'"
+          },
+          {
+            "_id": "r_severe_liquidity_deficit",
+            "_description": "Severe cash buffer deficit below minimum emergency threshold (< 300 bps)",
+            "in_entropy": "",
+            "in_coherence": "",
+            "in_d0_bps": "< 300",
+            "in_hhi": "",
+            "out_health_score": "45",
+            "out_risk_grade": "'HIGH'",
+            "out_rebalance": "true",
+            "out_actions": "'RESTORE_EMERGENCY_D0_BUFFER_ABOVE_500_BPS'"
+          },
+          {
+            "_id": "r_extreme_hhi_concentration",
+            "_description": "Extreme concentration shock exceeding 3500 HHI",
+            "in_entropy": "",
+            "in_coherence": "",
+            "in_d0_bps": "",
+            "in_hhi": "> 3500",
+            "out_health_score": "40",
+            "out_risk_grade": "'HIGH'",
+            "out_rebalance": "true",
+            "out_actions": "'TRIM_OVERWEIGHT_ASSETS_CAP_SINGLE_NAME_AT_20_PCT'"
+          },
+          {
+            "_id": "r_elevated_coherence_warning",
+            "_description": "Elevated systemic coherence index (> 0.50) indicating rising cross-correlation",
+            "in_entropy": "",
+            "in_coherence": "> 0.50",
+            "in_d0_bps": "",
+            "in_hhi": "",
+            "out_health_score": "60",
+            "out_risk_grade": "'MODERATE'",
+            "out_rebalance": "true",
+            "out_actions": "'MONITOR_CORRELATION_CLUSTERS,HEDGE_WITH_DECORRELATED_ASSETS'"
+          },
+          {
+            "_id": "r_excessive_cash_drag",
+            "_description": "Excessive D+0 cash allocation (> 5000 bps) causing inflationary erosion",
+            "in_entropy": "",
+            "in_coherence": "",
+            "in_d0_bps": "> 5000",
+            "in_hhi": "",
+            "out_health_score": "68",
+            "out_risk_grade": "'MODERATE'",
+            "out_rebalance": "true",
+            "out_actions": "'ALLOCATE_EXCESS_D0_CASH_TO_INFLATION_PROTECTED_ASSETS'"
+          },
+          {
+            "_id": "r_prime_quantum_equilibrium",
+            "_description": "Prime orthogonal diversification and balanced cash buffer",
+            "in_entropy": "",
+            "in_coherence": "<= 0.35",
+            "in_d0_bps": "[500..3000]",
+            "in_hhi": "< 1500",
+            "out_health_score": "95",
+            "out_risk_grade": "'PRIME'",
+            "out_rebalance": "false",
+            "out_actions": "'MAINTAIN_CURRENT_QUANTUM_EQUILIBRIUM'"
+          },
+          {
+            "_id": "r_healthy_low_risk",
+            "_description": "Low risk profile with controlled coherence and low concentration",
+            "in_entropy": "",
+            "in_coherence": "<= 0.45",
+            "in_d0_bps": ">= 300",
+            "in_hhi": "<= 2000",
+            "out_health_score": "85",
+            "out_risk_grade": "'LOW'",
+            "out_rebalance": "false",
+            "out_actions": "'PORTFOLIO_WELL_BALANCED_PERIODIC_REVIEW'"
+          },
+          {
+            "_id": "r_portfolio_fallback",
+            "_description": "Standard fallback rule for balanced portfolio",
+            "in_entropy": "",
+            "in_coherence": "",
+            "in_d0_bps": "",
+            "in_hhi": "",
+            "out_health_score": "72",
+            "out_risk_grade": "'MODERATE'",
+            "out_rebalance": "false",
+            "out_actions": "'CONDUCT_ROUTINE_MONTHLY_REBALANCE_CHECK'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output_quantum_health",
+      "name": "Quantum Health Response",
+      "type": "outputNode",
+      "position": {
+        "x": 680,
+        "y": 140
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_quantum_input_dt",
+      "sourceId": "input_quantum_health",
+      "targetId": "dt_portfolio_quantum_health"
+    },
+    {
+      "id": "edge_quantum_dt_output",
+      "sourceId": "dt_portfolio_quantum_health",
+      "targetId": "output_quantum_health"
+    }
+  ]
+}

@@ -1,8 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Evita inicialização ou chamadas de rede reais durante a execução de testes unitários (vitest/jest)
-// para não interceptar o fetch global mockado nos testes existentes de rotas.
 const isTest = process.env.NODE_ENV === "test";
 
 const redis =
@@ -16,8 +14,7 @@ const redis =
     : undefined;
 
 /**
- * Limitador GLOBAL para Câmbio (Alpha Vantage)
- * Alpha Vantage possui limite documentado estrito de 5 requisições por minuto no plano gratuito.
+ * Limitador GLOBAL para Cambio (Alpha Vantage)
  */
 export const cambioGlobalLimiter = redis
   ? new Ratelimit({
@@ -29,9 +26,7 @@ export const cambioGlobalLimiter = redis
   : null;
 
 /**
- * Limitador POR IP para Câmbio (Alpha Vantage)
- * Limite de 3 requisições por 60s por IP, impedindo que um único cliente consuma
- * sozinho toda a cota global compartilhada de 5 requisições/minuto.
+ * Limitador POR IP para Cambio (Alpha Vantage)
  */
 export const cambioIpLimiter = redis
   ? new Ratelimit({
@@ -43,10 +38,7 @@ export const cambioIpLimiter = redis
   : null;
 
 /**
- * Limitador GLOBAL para Ações (Brapi)
- * A Brapi não possui um limite documentado tão rígido quanto a Alpha Vantage para o plano free;
- * usamos 15 requisições / 60s como ponto de partida inicial.
- * NOTA: Ajustar este valor de acordo com o plano real contratado da Brapi.
+ * Limitador GLOBAL para Acoes (Brapi)
  */
 export const acaoGlobalLimiter = redis
   ? new Ratelimit({
@@ -58,9 +50,7 @@ export const acaoGlobalLimiter = redis
   : null;
 
 /**
- * Limitador POR IP para Ações (Brapi)
- * Limite de 10 requisições / 60s por IP, impedindo que uma única origem
- * consuma sozinha o orçamento global de cotações de ações.
+ * Limitador POR IP para Acoes (Brapi)
  */
 export const acaoIpLimiter = redis
   ? new Ratelimit({
@@ -72,8 +62,31 @@ export const acaoIpLimiter = redis
   : null;
 
 /**
- * Extrai o endereço IP do cliente a partir do cabeçalho `x-forwarded-for` (padrão Vercel e proxies reversos),
- * com fallback seguro para "unknown" se ausente, garantindo que a ausência do IP nunca quebre a rota.
+ * Limitador Granular para o Quantum & ZEN Agent (/api/agent/forecast) - ADR-002
+ */
+export const agentForecastLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(10, "60 s"),
+      prefix: "midas:rl:agent",
+      analytics: true,
+    })
+  : null;
+
+/**
+ * Limitador Granular para Sincronizacao de Contas (/api/conexoes) - ADR-002
+ */
+export const connectorSyncLimiter = redis
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(5, "60 s"),
+      prefix: "midas:rl:sync",
+      analytics: true,
+    })
+  : null;
+
+/**
+ * Extrai o endereco IP do cliente a partir do cabecalho x-forwarded-for
  */
 export function getClientIp(request: Request): string {
   const forwardedFor = request.headers.get("x-forwarded-for");

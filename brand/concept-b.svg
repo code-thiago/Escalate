@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Escalate Logo - Concept B (Dynamic Kinetic Chevrons / Angled E)</title>
+  <!-- Concept B: Dynamic Angled E. Forward-leaning 45-degree precision cuts with an upward compounding trajectory. -->
+  <g fill="#6366F1">
+    <!-- Vertical Anchor Spine -->
+    <rect x="44" y="40" width="40" height="176" rx="4" />
+    <!-- Tier 3 (Peak Escalation) -->
+    <path d="M84 40 H204 L216 56 L196 80 H84 Z" />
+    <!-- Tier 2 (Yield Acceleration) -->
+    <path d="M84 108 H172 L184 124 L164 148 H84 Z" />
+    <!-- Tier 1 (Capital Base) -->
+    <path d="M84 176 H140 L152 192 L132 216 H84 Z" />
+  </g>
+</svg>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signUp, useSession } from "@/src/lib/auth-client";
-import Navegacao from "@/src/components/Navegacao";
+import EscalateLogo from "@/src/components/brand/EscalateLogo";
 
 export default function RegistroPage() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function RegistroPage() {
   // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (!isSessionPending && session?.user) {
-      router.replace("/app");
+      router.replace("/investimentos");
     }
   }, [session, isSessionPending, router]);
 
@@ -53,7 +53,7 @@ export default function RegistroPage() {
         return;
       }
 
-      router.push("/app");
+      router.push("/investimentos");
       router.refresh();
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -66,7 +66,15 @@ export default function RegistroPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center pb-12">
-      <Navegacao />
+      <header className="w-full max-w-md mx-auto pt-8 px-4 flex items-center justify-between">
+        <EscalateLogo size="md" href="/" />
+        <Link
+          href="/"
+          className="text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
+        >
+          &larr; Voltar ao início
+        </Link>
+      </header>
 
       <div className="w-full max-w-md mx-auto px-4 mt-8">
         <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border dark:border-zinc-800 shadow-sm space-y-6">

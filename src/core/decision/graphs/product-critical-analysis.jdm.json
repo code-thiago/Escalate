@@ -1,0 +1,291 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input_product_critique",
+      "name": "Product Input Context",
+      "type": "inputNode",
+      "position": {
+        "x": 60,
+        "y": 140
+      }
+    },
+    {
+      "id": "dt_product_critical_analysis",
+      "name": "Product Critical Analysis Matrix",
+      "type": "decisionTableNode",
+      "position": {
+        "x": 340,
+        "y": 140
+      },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "in_class",
+            "name": "Product Class",
+            "field": "productClass",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_mgmt_fee",
+            "name": "Management Fee (bps)",
+            "field": "managementFeeBps",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_perf_fee",
+            "name": "Performance Fee (bps)",
+            "field": "performanceFeeBps",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_holding_days",
+            "name": "Holding Period (Days)",
+            "field": "holdingPeriodDays",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_has_fgc",
+            "name": "Has FGC",
+            "field": "hasFgc",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_exempt_tax",
+            "name": "Is Exempt Tax",
+            "field": "isExemptTax",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out_score",
+            "name": "Critical Score",
+            "field": "criticalScore"
+          },
+          {
+            "id": "out_risk_level",
+            "name": "Risk Level",
+            "field": "riskLevel"
+          },
+          {
+            "id": "out_hidden_costs",
+            "name": "Hidden Cost Flags",
+            "field": "hiddenCostFlags"
+          },
+          {
+            "id": "out_recommendation",
+            "name": "Recommendation",
+            "field": "recommendation"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "r_coe_structural_risk",
+            "_description": "COE structured note embedded spread and payoff asymmetry",
+            "in_class": "'coe'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "30",
+            "out_risk_level": "'CRITICAL'",
+            "out_hidden_costs": "'EMBEDDED_OPTION_SPREAD,NO_FGC_ON_DERIVATIVE,MARK_TO_MARKET_ASYMMETRY'",
+            "out_recommendation": "'AVOID_EXCESSIVE_SPREAD_AND_ASYMMETRY'"
+          },
+          {
+            "_id": "r_short_holding_tax_inefficiency",
+            "_description": "Penalize holding period < 30 days due to regressive IOF up to 96% and 22.5% IR",
+            "in_class": "",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "< 30",
+            "in_has_fgc": "",
+            "in_exempt_tax": "false",
+            "out_score": "35",
+            "out_risk_level": "'HIGH'",
+            "out_hidden_costs": "'REGRESSIVE_IOF_PENALTY,MAX_IR_22_5'",
+            "out_recommendation": "'EXTEND_HOLDING_BEYOND_30_DAYS_TO_AVOID_IOF'"
+          },
+          {
+            "_id": "r_fund_excessive_fee_drag",
+            "_description": "Penalize investment fund with management fee exceeding 200 bps (> 2.0% a.a.)",
+            "in_class": "'fundos'",
+            "in_mgmt_fee": "> 200",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "40",
+            "out_risk_level": "'HIGH'",
+            "out_hidden_costs": "'EXCESSIVE_MGMT_FEE_DRAG,COME_COTAS_TAX_EROSION'",
+            "out_recommendation": "'REPLACE_WITH_LOW_COST_ETF_OR_DIRECT_ASSET'"
+          },
+          {
+            "_id": "r_crypto_volatility_custody",
+            "_description": "Evaluate crypto assets with high volatility and lack of FGC guarantee",
+            "in_class": "'cripto'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "55",
+            "out_risk_level": "'HIGH'",
+            "out_hidden_costs": "'NO_FGC_GUARANTEE,HIGH_VOLATILITY,EXCHANGE_SPREAD'",
+            "out_recommendation": "'LIMIT_PORTFOLIO_EXPOSURE_AND_USE_SELF_CUSTODY'"
+          },
+          {
+            "_id": "r_cambio_spread_iof",
+            "_description": "Evaluate foreign exchange remittance costs (bank spread over PTAX + IOF)",
+            "in_class": "'cambio'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "50",
+            "out_risk_level": "'MODERATE'",
+            "out_hidden_costs": "'BANK_SPREAD_OVER_PTAX,IOF_CURRENCY_TAX'",
+            "out_recommendation": "'COMPARE_COMMERCIAL_SPREAD_AND_PLATFORM_FEES'"
+          },
+          {
+            "_id": "r_low_cost_etf",
+            "_description": "Recognize low-cost ETF (mgmt fee <= 50 bps) as high efficiency core vehicle",
+            "in_class": "'etfs'",
+            "in_mgmt_fee": "<= 50",
+            "in_perf_fee": "",
+            "in_holding_days": ">= 180",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "92",
+            "out_risk_level": "'LOW'",
+            "out_hidden_costs": "'NO_COME_COTAS,15_PCT_FLAT_TAX'",
+            "out_recommendation": "'EXCELLENT_LOW_COST_CORE_VEHICLE'"
+          },
+          {
+            "_id": "r_exempt_rf_with_fgc",
+            "_description": "Maximum score for tax-exempt fixed income with FGC (LCI/LCA)",
+            "in_class": "'renda_fixa'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "true",
+            "in_exempt_tax": "true",
+            "out_score": "95",
+            "out_risk_level": "'LOW'",
+            "out_hidden_costs": "'NONE'",
+            "out_recommendation": "'MAXIMUM_TAX_EFFICIENCY_AND_FGC_SAFETY'"
+          },
+          {
+            "_id": "r_exempt_rf_without_fgc",
+            "_description": "Tax-exempt fixed income without FGC (CRI/CRA/Debentures Incentivadas)",
+            "in_class": "'renda_fixa'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "false",
+            "in_exempt_tax": "true",
+            "out_score": "78",
+            "out_risk_level": "'MODERATE'",
+            "out_hidden_costs": "'CREDIT_RISK_WITHOUT_FGC'",
+            "out_recommendation": "'VERIFY_ISSUER_RATING_FOR_NON_FGC_CREDIT'"
+          },
+          {
+            "_id": "r_tesouro_direto_long",
+            "_description": "Tesouro Direto long holding period (>= 720 days, 15% min IR, sovereign safety)",
+            "in_class": "'tesouro_direto'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": ">= 720",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "95",
+            "out_risk_level": "'LOW'",
+            "out_hidden_costs": "'B3_CUSTODY_FEE_20_BPS'",
+            "out_recommendation": "'SOVEREIGN_SAFETY_AND_MINIMAL_IR_BRACKET'"
+          },
+          {
+            "_id": "r_tesouro_direto_mtm_risk",
+            "_description": "Tesouro Direto holding < 360 days subject to mark-to-market volatility and higher IR",
+            "in_class": "'tesouro_direto'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "< 360",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "72",
+            "out_risk_level": "'MODERATE'",
+            "out_hidden_costs": "'MARK_TO_MARKET_VOLATILITY,HIGHER_IR_BRACKET'",
+            "out_recommendation": "'HOLD_UNTIL_MATURITY_OR_USE_SELIC_FOR_SHORT_HORIZON'"
+          },
+          {
+            "_id": "r_bolsa_long_holding",
+            "_description": "Bolsa equity asset held for long term (>= 360 days) for dividend yield and compounding",
+            "in_class": "'bolsa'",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": ">= 360",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "82",
+            "out_risk_level": "'MODERATE'",
+            "out_hidden_costs": "'VOLATILITY_EQUITY_RISK'",
+            "out_recommendation": "'LONG_TERM_EQUITY_COMPOUNDING_DIVERSIFICATION'"
+          },
+          {
+            "_id": "r_fund_competitive_fee",
+            "_description": "Investment fund with competitive fee (<= 80 bps) and long holding (>= 720 days)",
+            "in_class": "'fundos'",
+            "in_mgmt_fee": "<= 80",
+            "in_perf_fee": "",
+            "in_holding_days": ">= 720",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "85",
+            "out_risk_level": "'LOW'",
+            "out_hidden_costs": "'COME_COTAS_SEMIANNUAL'",
+            "out_recommendation": "'COMPETITIVE_MANAGEMENT_FEE_CORE_FUND'"
+          },
+          {
+            "_id": "r_product_fallback",
+            "_description": "Standard fallback rule for general market products",
+            "in_class": "",
+            "in_mgmt_fee": "",
+            "in_perf_fee": "",
+            "in_holding_days": "",
+            "in_has_fgc": "",
+            "in_exempt_tax": "",
+            "out_score": "65",
+            "out_risk_level": "'MODERATE'",
+            "out_hidden_costs": "'STANDARD_MARKET_CONDITIONS'",
+            "out_recommendation": "'EVALUATE_NET_SPREAD_AND_HOLDING_HORIZON'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output_product_critique",
+      "name": "Product Critique Response",
+      "type": "outputNode",
+      "position": {
+        "x": 680,
+        "y": 140
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_product_input_dt",
+      "sourceId": "input_product_critique",
+      "targetId": "dt_product_critical_analysis"
+    },
+    {
+      "id": "edge_product_dt_output",
+      "sourceId": "dt_product_critical_analysis",
+      "targetId": "output_product_critique"
+    }
+  ]
+}

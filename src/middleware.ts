@@ -45,20 +45,7 @@ function getClientIp(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Proteção de rotas do app (Validação de sessão existente)
-  if (pathname.startsWith("/app/minhas-simulacoes")) {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-
-    return NextResponse.next();
-  }
-
-  // 2. Rate Limiting distribuído para rotas /api/*
+  // Rate Limiting distribuído para rotas /api/*
   if (pathname.startsWith("/api/")) {
     const clientIp = getClientIp(request);
 
@@ -135,9 +122,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   runtime: "nodejs",
-  matcher: [
-    "/app/minhas-simulacoes",
-    "/app/minhas-simulacoes/:path*",
-    "/api/:path*",
-  ],
+  matcher: ["/api/:path*"],
 };

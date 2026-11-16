@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Escalate Logo - Concept C (Modular Tiered Growth)</title>
+  <!-- Concept C: Floating Precision Tiers. Three horizontal architectural plates with uniform 24px vertical air-gaps, representing the 3 phases of wealth compounding: Principal, Contributions, and Compound Yield. -->
+  <g fill="#6366F1">
+    <!-- Tier 3: Compound Yield (Zenith) -->
+    <rect x="44" y="44" width="168" height="40" rx="8" />
+    <!-- Tier 2: Regular Contributions (Momentum) -->
+    <rect x="44" y="108" width="136" height="40" rx="8" />
+    <!-- Tier 1: Initial Principal (Foundation) -->
+    <rect x="44" y="172" width="104" height="40" rx="8" />
+    <!-- Vertical Grounding Anchor (Linking Spine) -->
+    <rect x="44" y="44" width="36" height="168" rx="8" />
+  </g>
+</svg>
