@@ -36,6 +36,89 @@ type QuantEngineKey =
   | "trading"
   | "gorules";
 
+interface DcfExecutionResult {
+  presentValueCashFlows: string;
+  presentTerminalValue: string;
+  enterpriseValue: string;
+}
+
+interface MarkowitzBlExecutionResult {
+  markowitz: {
+    totalValue: string;
+    weights: number[];
+    expectedReturnAnnual: number;
+    portfolioVolatilityAnnual: number;
+    sharpeRatio: number;
+  };
+  posteriorReturns: Record<string, number>;
+}
+
+interface TradingGarchKalmanResult {
+  garch: {
+    conditionalVariance: number;
+    conditionalVolatility: number;
+    isStationary: boolean;
+  };
+  kalman: {
+    filteredPrices: number[];
+    finalKalmanGain: number;
+    latestSpreadZScore: number;
+  };
+  metering: {
+    allowed: boolean;
+    totalUsedTokens: number;
+    remainingTokens: number;
+  };
+}
+
+interface GoRulesDigestResult {
+  portfolioName: string;
+  assetCount: number;
+  totalNetWorth: string;
+  weightedReturnAnnual: number;
+  diagonalVolatilityAnnual: number;
+  sharpeRatio: number;
+  topConcentrationTicker: string | null;
+  topConcentrationPct: number;
+  isCompliant: boolean;
+  cvmGuardrailText: string;
+  cvmViolationMatch?: string;
+  rawHistoricalArraysStripped: true;
+}
+
+type EngineExecutionState =
+  | { kind: "dcf"; data: DcfExecutionResult }
+  | { kind: "markowitz-bl"; data: MarkowitzBlExecutionResult }
+  | { kind: "trading"; data: TradingGarchKalmanResult }
+  | { kind: "gorules"; data: GoRulesDigestResult };
+
+const DEFAULT_QUANT_ASSETS = [
+  {
+    assetId: "asset-petr4",
+    ticker: "PETR4",
+    assetClass: "EQUITY_BR",
+    benchmarkIndexer: "IBOV",
+    quantityDecimal: "500.00",
+    unitPriceDecimal: "40.00",
+    expectedReturnAnnual: 0.16,
+    volatilityAnnual: 0.28,
+    liquidityDays: 2,
+    taxRegime: "SWING_TRADE_15",
+  },
+  {
+    assetId: "asset-gold11",
+    ticker: "GOLD11",
+    assetClass: "GOLD",
+    benchmarkIndexer: "USD",
+    quantityDecimal: "1000.00",
+    unitPriceDecimal: "20.00",
+    expectedReturnAnnual: 0.12,
+    volatilityAnnual: 0.2,
+    liquidityDays: 2,
+    taxRegime: "SWING_TRADE_15",
+  },
+];
+
 const ENGINE_METADATA: Record<
   QuantEngineKey,
   { label: string; badge: string; description: string }
@@ -106,6 +189,139 @@ export default function QuantumAgentPage() {
   const [selectedJdmGraph, setSelectedJdmGraph] = useState<
     "portfolio-quantum-health" | "goal-allocation-guard" | "product-critical-analysis"
   >("portfolio-quantum-health");
+  const [isExecutingEngine, setIsExecutingEngine] = useState<boolean>(false);
+  const [engineExecutionError, setEngineExecutionError] = useState<string | null>(null);
+  const [engineExecutionResult, setEngineExecutionResult] =
+    useState<EngineExecutionState | null>(null);
+
+  useEffect(() => {
+    setEngineExecutionError(null);
+    setEngineExecutionResult(null);
+  }, [activeEngine]);
+
+  const handleExecuteDeterministicEngine = async () => {
+    if (activeEngine === "copilot") return;
+    setIsExecutingEngine(true);
+    setEngineExecutionError(null);
+
+    try {
+      if (activeEngine === "dcf") {
+        const res = await fetch("/api/escalate/quant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "RUN_DCF",
+            freeCashFlows: ["100000.00", "110000.00", "121000.00"],
+            wacc: 0.12,
+            terminalGrowthRate: 0.04,
+            netDebtDecimal: "50000.00",
+            sharesOutstandingDecimal: "10000.00",
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error ?? `HTTP ${res.status}`);
+        }
+        setEngineExecutionResult({ kind: "dcf", data: json.result });
+      } else if (
+        activeEngine === "markowitz" ||
+        activeEngine === "black-litterman"
+      ) {
+        const res = await fetch("/api/escalate/quant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "RUN_MARKOWITZ_BL",
+            assets: DEFAULT_QUANT_ASSETS,
+            correlationMatrix: [
+              [1.0, -0.5],
+              [-0.5, 1.0],
+            ],
+            riskFreeRateAnnual: 0.105,
+            views: [
+              {
+                ticker: "PETR4",
+                directionalShock: 0.28,
+                confidenceOmega: 0.2,
+                rationaleDigest: "Supply constraint shock.",
+              },
+            ],
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error ?? `HTTP ${res.status}`);
+        }
+        setEngineExecutionResult({
+          kind: "markowitz-bl",
+          data: {
+            markowitz: json.markowitz,
+            posteriorReturns: json.posteriorReturns,
+          },
+        });
+      } else if (activeEngine === "trading") {
+        const res = await fetch("/api/escalate/trading-ocr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "RUN_GARCH_KALMAN",
+            tenantId: "agent-workbench",
+            tier: "FREE_TRIAL",
+            garch: {
+              omega: 0.00001,
+              alpha: 0.12,
+              beta: 0.85,
+              previousReturnShock: -0.05,
+              previousVolatility: 0.015,
+            },
+            kalman: {
+              noisyPrices: [100.0, 100.02, 99.98, 100.01, 104.5],
+              processNoiseQ: 0.01,
+              measurementNoiseR: 1.0,
+              initialEstimate: 100.0,
+              initialErrorCov: 0.1,
+            },
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error ?? `HTTP ${res.status}`);
+        }
+        setEngineExecutionResult({
+          kind: "trading",
+          data: {
+            garch: json.garch,
+            kalman: json.kalman,
+            metering: json.metering,
+          },
+        });
+      } else if (activeEngine === "gorules") {
+        const res = await fetch("/api/escalate/quant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "BUILD_AGENT_DIGEST",
+            portfolioName: "Carteira Institucional Alpha",
+            assets: DEFAULT_QUANT_ASSETS,
+            riskFreeRateAnnual: 0.105,
+            cvmCandidateText:
+              "Compre agora PETR4 para maximizar retorno no curto prazo.",
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error ?? `HTTP ${res.status}`);
+        }
+        setEngineExecutionResult({ kind: "gorules", data: json.digest });
+      }
+    } catch (err: unknown) {
+      setEngineExecutionError(
+        err instanceof Error ? err.message : "Erro ao executar motor deterministico.",
+      );
+    } finally {
+      setIsExecutingEngine(false);
+    }
+  };
 
   const portfolioNetCents = 104690000n; // R$ 1,046,900.00 consolidated net portfolio
 
@@ -223,40 +439,216 @@ export default function QuantumAgentPage() {
       </Suspense>
 
       {/* Active Engine Telemetry Mode Strip */}
-      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-[family-name:var(--ds-font-mono)] uppercase px-2 py-0.5 rounded bg-[var(--ds-accent-quant)]/15 text-[var(--ds-accent-quant)] border border-[var(--ds-accent-quant)]/30 tabular-financial">
-              {activeEngineMeta.badge}
-            </span>
-            <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
-              {activeEngineMeta.label}
-            </h2>
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-[family-name:var(--ds-font-mono)] uppercase px-2 py-0.5 rounded bg-[var(--ds-accent-quant)]/15 text-[var(--ds-accent-quant)] border border-[var(--ds-accent-quant)]/30 tabular-financial">
+                {activeEngineMeta.badge}
+              </span>
+              <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+                {activeEngineMeta.label}
+              </h2>
+            </div>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
+              {activeEngineMeta.description}
+            </p>
           </div>
-          <p className="text-xs text-[var(--ds-text-secondary)]">
-            {activeEngineMeta.description}
-          </p>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {(Object.keys(ENGINE_METADATA) as QuantEngineKey[]).map((key) => {
+              const href = key === "copilot" ? "/agent" : `/agent?engine=${key}`;
+              const active = activeEngine === key;
+              return (
+                <Link
+                  key={key}
+                  href={href}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-[family-name:var(--ds-font-mono)] border transition-colors ${
+                    active
+                      ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] border-[var(--ds-accent-quant)] font-semibold"
+                      : "bg-[var(--ds-bg-primary)] text-[var(--ds-text-secondary)] border-[var(--ds-border-subtle)] hover:text-[var(--ds-text-primary)]"
+                  }`}
+                >
+                  {key}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {(Object.keys(ENGINE_METADATA) as QuantEngineKey[]).map((key) => {
-            const href = key === "copilot" ? "/agent" : `/agent?engine=${key}`;
-            const active = activeEngine === key;
-            return (
-              <Link
-                key={key}
-                href={href}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-[family-name:var(--ds-font-mono)] border transition-colors ${
-                  active
-                    ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] border-[var(--ds-accent-quant)] font-semibold"
-                    : "bg-[var(--ds-bg-primary)] text-[var(--ds-text-secondary)] border-[var(--ds-border-subtle)] hover:text-[var(--ds-text-primary)]"
-                }`}
+        {activeEngine !== "copilot" && (
+          <div className="border-t border-[var(--ds-border-subtle)] pt-3 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={handleExecuteDeterministicEngine}
+                disabled={isExecutingEngine}
+                className="px-3.5 py-2 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
               >
-                {key}
-              </Link>
-            );
-          })}
-        </div>
+                {isExecutingEngine
+                  ? "Executando Motor Determinístico..."
+                  : "Executar Motor Determinístico (decimal.js)"}
+              </button>
+
+              <span className="text-[11px] font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)]">
+                Endpoint:{" "}
+                <span className="text-[var(--ds-text-primary)]">
+                  {activeEngine === "trading"
+                    ? "POST /api/escalate/trading-ocr"
+                    : "POST /api/escalate/quant"}
+                </span>
+              </span>
+            </div>
+
+            {engineExecutionError && (
+              <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-market-negative)]/40 rounded-lg p-3 text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-market-negative)]">
+                {engineExecutionError}
+              </div>
+            )}
+
+            {engineExecutionResult?.kind === "dcf" && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    presentValueCashFlows
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.presentValueCashFlows}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    presentTerminalValue
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.presentTerminalValue}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-accent-quant)]/40 rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-accent-quant)]">
+                    enterpriseValue
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-accent-quant)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.enterpriseValue}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {engineExecutionResult?.kind === "markowitz-bl" && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    portfolioVolatilityAnnual
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.markowitz.portfolioVolatilityAnnual.toFixed(
+                      4,
+                    )}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    sharpeRatio
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-market-positive)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.markowitz.sharpeRatio.toFixed(4)}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-accent-quant)]/40 rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-accent-quant)]">
+                    posteriorReturns (clamped)
+                  </div>
+                  <div className="text-xs font-bold text-[var(--ds-text-primary)] mt-1 space-y-0.5 tabular-financial">
+                    {Object.entries(
+                      engineExecutionResult.data.posteriorReturns,
+                    ).map(([ticker, val]) => (
+                      <div key={ticker} className="tabular-financial">
+                        {ticker}: {val.toFixed(4)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {engineExecutionResult?.kind === "trading" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    conditionalVolatility
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.garch.conditionalVolatility.toFixed(
+                      6,
+                    )}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    finalKalmanGain
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-accent-quant)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.kalman.finalKalmanGain.toFixed(
+                      6,
+                    )}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    latestSpreadZScore
+                  </div>
+                  <div className="text-sm font-bold text-[var(--ds-market-warning)] mt-1 tabular-financial">
+                    {engineExecutionResult.data.kalman.latestSpreadZScore.toFixed(
+                      6,
+                    )}
+                  </div>
+                </div>
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-market-positive)]/40 rounded-lg p-3 flex flex-col justify-between">
+                  <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                    Custo LLM Metering
+                  </div>
+                  <span className="inline-flex w-fit items-center px-2 py-0.5 rounded text-xs font-bold bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/40 tabular-financial">
+                    {engineExecutionResult.data.metering.totalUsedTokens} Tokens
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {engineExecutionResult?.kind === "gorules" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-accent-quant)]">
+                      Digest Compacto (&lt; 350 tokens)
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] text-[var(--ds-text-primary)] tabular-financial">
+                      {JSON.stringify(engineExecutionResult.data).length} chars
+                    </span>
+                  </div>
+                  <pre className="text-[11px] font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] overflow-x-auto leading-relaxed tabular-financial">
+                    {JSON.stringify(engineExecutionResult.data, null, 2)}
+                  </pre>
+                </div>
+
+                <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-market-warning)]/40 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-market-warning)]">
+                      Auditoria CVM Resolucao 20
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--ds-market-negative)]/15 text-[var(--ds-market-negative)] border border-[var(--ds-market-negative)]/40 tabular-financial">
+                      isCompliant:{" "}
+                      {String(engineExecutionResult.data.isCompliant)}
+                    </span>
+                  </div>
+                  <div className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] leading-relaxed">
+                    {engineExecutionResult.data.cvmGuardrailText}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Stage 1 Controls: Quantum Walk & Open Quantum Decoherence Parameter */}

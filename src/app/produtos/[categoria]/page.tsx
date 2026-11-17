@@ -39,6 +39,110 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
   const [feeBps, setFeeBps] = useState<number>(meta.defaultFeeBps);
   const [isExemptTax, setIsExemptTax] = useState<boolean>(false);
 
+  // WP-05.3: Auditor de Custo de Oportunidade vs. CDI (0-Token Engine)
+  const isStructuredOrFixedIncome =
+    meta.slug === "coe" ||
+    meta.slug === "renda-fixa" ||
+    meta.slug === "tesouro-direto" ||
+    meta.slug === "previdencia" ||
+    meta.slug === "fundos";
+  const [coeTicker, setCoeTicker] = useState<string>(
+    meta.slug === "coe"
+      ? "COE-SP500-LOCK-2029"
+      : `${meta.slug.toUpperCase()}-LOCK-2027`,
+  );
+  const [cdiBenchmarkBps, setCdiBenchmarkBps] = useState<number>(1115);
+  const [liveAuditState, setLiveAuditState] = useState<{
+    illiquidityPenaltyAnnual: number;
+    netSpreadVsCdiAnnual: number;
+    verdict: "SUBOPTIMAL_VS_CDI" | "COMPETITIVE";
+    source: "INLINE_0_TOKEN" | "API_CUSTODY_AUDIT_COE";
+    loading: boolean;
+    error: string | null;
+  } | null>(null);
+
+  const inlineCoeAudit = useMemo(() => {
+    const expectedReturnAnnual = annualRateBps / 10000;
+    const cdiBenchmarkAnnual = cdiBenchmarkBps / 10000;
+    const illiquidityPenaltyAnnual = Number(
+      ((holdingDays / 365) * 0.0075).toFixed(6),
+    );
+    const netSpreadVsCdiAnnual = Number(
+      (
+        expectedReturnAnnual -
+        cdiBenchmarkAnnual -
+        illiquidityPenaltyAnnual
+      ).toFixed(6),
+    );
+    const verdict: "SUBOPTIMAL_VS_CDI" | "COMPETITIVE" =
+      netSpreadVsCdiAnnual < 0 ? "SUBOPTIMAL_VS_CDI" : "COMPETITIVE";
+    return {
+      illiquidityPenaltyAnnual,
+      netSpreadVsCdiAnnual,
+      verdict,
+    };
+  }, [annualRateBps, cdiBenchmarkBps, holdingDays]);
+
+  const activeCoeAudit = liveAuditState ?? {
+    ...inlineCoeAudit,
+    source: "INLINE_0_TOKEN" as const,
+    loading: false,
+    error: null,
+  };
+
+  async function handleRunLiveCoeAudit() {
+    setLiveAuditState((prev) => ({
+      ...(prev ?? {
+        ...inlineCoeAudit,
+        source: "INLINE_0_TOKEN",
+        error: null,
+      }),
+      loading: true,
+      error: null,
+    }));
+    try {
+      const response = await fetch("/api/escalate/custody", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "AUDIT_COE",
+          coeTicker: coeTicker.trim() || "COE-LOCK-AUDIT",
+          expectedReturnAnnual: annualRateBps / 10000,
+          cdiBenchmarkAnnual: cdiBenchmarkBps / 10000,
+          liquidityDays: holdingDays,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = (await response.json()) as {
+        audit?: {
+          illiquidityPenaltyAnnual: number;
+          netSpreadVsCdiAnnual: number;
+          verdict: "SUBOPTIMAL_VS_CDI" | "COMPETITIVE";
+        };
+      };
+      if (!data.audit) {
+        throw new Error("AUDIT_PAYLOAD_MISSING");
+      }
+      setLiveAuditState({
+        illiquidityPenaltyAnnual: data.audit.illiquidityPenaltyAnnual,
+        netSpreadVsCdiAnnual: data.audit.netSpreadVsCdiAnnual,
+        verdict: data.audit.verdict,
+        source: "API_CUSTODY_AUDIT_COE",
+        loading: false,
+        error: null,
+      });
+    } catch {
+      setLiveAuditState({
+        ...inlineCoeAudit,
+        source: "INLINE_0_TOKEN",
+        loading: false,
+        error: "Fallback deterministico local ativo (0-Token Engine).",
+      });
+    }
+  }
+
   const analysis = useMemo(
     () =>
       runCatalogProductAnalysis(meta, {
@@ -475,6 +579,124 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                 </div>
               </section>
             </div>
+
+            {/* WP-05.3: Auditor de Custo de Oportunidade vs. CDI (0-Token Engine) */}
+            {isStructuredOrFixedIncome && (
+              <section
+                aria-label="Auditor de Custo de Oportunidade vs. CDI"
+                className={`bg-[var(--ds-surface-card)] rounded-xl p-5 space-y-4 border ${
+                  meta.slug === "coe"
+                    ? "border-[var(--ds-market-warning)]/60"
+                    : "border-[var(--ds-border-subtle)]"
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ds-border-subtle)] pb-3">
+                  <div>
+                    <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
+                      WP-05.3 — Auditoria Estruturada (0-Token Engine)
+                    </span>
+                    <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+                      Auditor de Custo de Oportunidade vs. CDI
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-2.5 py-1 rounded text-xs font-[family-name:var(--ds-font-mono)] font-semibold tabular-financial border ${
+                        activeCoeAudit.verdict === "SUBOPTIMAL_VS_CDI"
+                          ? "bg-[var(--ds-market-negative)]/15 text-[var(--ds-market-negative)] border-[var(--ds-market-negative)]/40"
+                          : "bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)] border-[var(--ds-market-positive)]/40"
+                      }`}
+                    >
+                      [{activeCoeAudit.verdict}]
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRunLiveCoeAudit}
+                      disabled={activeCoeAudit.loading}
+                      className="px-3 py-1.5 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 disabled:opacity-60 transition-opacity cursor-pointer"
+                    >
+                      {activeCoeAudit.loading
+                        ? "Auditando..."
+                        : "Auditar via /api/escalate/custody"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label
+                      htmlFor="input-coe-ticker"
+                      className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
+                    >
+                      Ticker / Estrutura
+                    </label>
+                    <input
+                      id="input-coe-ticker"
+                      type="text"
+                      value={coeTicker}
+                      onChange={(e) => setCoeTicker(e.target.value)}
+                      className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="input-cdi-benchmark"
+                      className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
+                    >
+                      Benchmark CDI (bps a.a.)
+                    </label>
+                    <input
+                      id="input-cdi-benchmark"
+                      type="number"
+                      min={0}
+                      max={5000}
+                      step={25}
+                      value={cdiBenchmarkBps}
+                      onChange={(e) => {
+                        setCdiBenchmarkBps(Number(e.target.value) || 0);
+                        setLiveAuditState(null);
+                      }}
+                      className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
+                    />
+                  </div>
+
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[11px] text-[var(--ds-text-secondary)]">
+                      Penalidade de Iliquidez (75 bps/yr)
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-market-warning)] mt-0.5 tabular-financial">
+                      {(activeCoeAudit.illiquidityPenaltyAnnual * 100).toFixed(2)}% a.a. (
+                      {Math.round(activeCoeAudit.illiquidityPenaltyAnnual * 10000)} bps)
+                    </div>
+                  </div>
+
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[11px] text-[var(--ds-text-secondary)]">
+                      Spread Liquido vs. CDI (netSpreadVsCdiAnnual)
+                    </div>
+                    <div
+                      className={`text-sm font-bold mt-0.5 tabular-financial ${
+                        activeCoeAudit.netSpreadVsCdiAnnual < 0
+                          ? "text-[var(--ds-market-negative)]"
+                          : "text-[var(--ds-market-positive)]"
+                      }`}
+                    >
+                      {activeCoeAudit.netSpreadVsCdiAnnual >= 0 ? "+" : ""}
+                      {(activeCoeAudit.netSpreadVsCdiAnnual * 100).toFixed(2)}% a.a. (
+                      {Math.round(activeCoeAudit.netSpreadVsCdiAnnual * 10000)} bps)
+                    </div>
+                  </div>
+                </div>
+
+                {activeCoeAudit.error && (
+                  <p className="text-[11px] font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)]">
+                    {activeCoeAudit.error}
+                  </p>
+                )}
+              </section>
+            )}
           </>
         )}
       </div>

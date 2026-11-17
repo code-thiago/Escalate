@@ -5,7 +5,7 @@
   "target_version": "1.2.0",
   "pre_code_blueprint_lock": false,
   "gate_status": "UNLOCKED",
-  "active_stage": "WP_04_CONSOLIDATED_VERIFICATION",
+  "active_stage": "WP_05_COMPLETED_AND_VERIFIED",
   "active_document": "ALL_7_SYNCHRONIZED_AND_LOCKED",
   "verified_test_suites": [
     "apps/api/tests/quant-and-cvm-guard.test.ts",
@@ -18,7 +18,10 @@
     "apps/api/tests/wp03-3-worker-cache.test.ts",
     "apps/api/tests/wp04-1-garch-kalman.test.ts",
     "apps/api/tests/wp04-2-ocr-metering.test.ts",
-    "apps/api/tests/wp04-3-trading-ocr-api.test.ts"
+    "apps/api/tests/wp04-3-trading-ocr-api.test.ts",
+    "apps/api/tests/wp05-1-conexoes-integration.test.ts",
+    "apps/api/tests/wp05-2-agent-engines.test.ts",
+    "apps/api/tests/wp05-3-coe-live-audit.test.ts"
   ],
   "injected_skills": [
     "addyosmani/agent-skills:plan",

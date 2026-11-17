@@ -65,6 +65,10 @@ flowchart LR
    - Encrypts read-only broker keys (`BINANCE_READONLY`, `B3_CEI`) via Node native `aes-256-gcm` with unique 96-bit IVs (`24` hex chars) and 128-bit authentication tags (`32` hex chars), throwing `VAULT_AUTH_TAG_TAMPERED` on 1-byte tampering (`envelope-vault.ts`).
 3. **`FLOW-AGENT-DIGEST-01` (Zero-Raw-Data Pre-LLM Bridge)**:
    - Summarizes multi-asset custody vectors into a deterministic `< 350 token` (`< 1400 chars`) JSON digest (`custody-quant-bridge.ts`) with exact `Decimal` net worth, 100% class allocation sum, Sharpe metrics, and `enforceCvmResolution20Grammar` verification before any LLM invocation.
+4. **`FLOW-WP05-LIVE-UI-01` (WP-05 Terminal Views Wired to Live Escalate Endpoints — `COMPLETED_AND_VERIFIED`)**:
+   - `/investimentos/conexoes` (`WP-05.1`): Dispatches `PARSE_SINACOR_B3`, `STORE_BROKER_KEY`, and `INGEST_OCR_STATEMENT` to `/api/escalate/custody` and `/api/escalate/trading-ocr`.
+   - `/agent?engine=...` (`WP-05.2`): Dispatches `RUN_DCF`, `RUN_MARKOWITZ_BL`, `RUN_GARCH_KALMAN`, and `BUILD_AGENT_DIGEST` to `/api/escalate/quant` and `/api/escalate/trading-ocr`.
+   - `/produtos/[categoria]` (`WP-05.3`): Dispatches `AUDIT_COE` to `/api/escalate/custody` for live CDI opportunity cost and illiquidity penalty telemetry.
 
 ---
 

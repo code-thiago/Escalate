@@ -43,6 +43,11 @@
 * **`WP-04.2` (`SAAS TOKEN METER & OCR NORMALIZER`)**: Implement `SaaSTokenMeter` (`apps/api/src/modules/billing/saas-token-meter.ts`) and `normalizeOcrExtractedHoldings` (`apps/api/src/modules/portfolio/ocr-statement-normalizer.ts`, `confidenceScore >= 0.80` threshold). Verified by `apps/api/tests/wp04-2-ocr-metering.test.ts`.
 * **`WP-04.3` (`UNIFIED TRADING & OCR API ROUTE`)**: Implement `POST /api/escalate/trading-ocr` (`src/app/api/escalate/trading-ocr/route.ts`) supporting `RUN_GARCH_KALMAN` (`0` LLM tokens) and `INGEST_OCR_STATEMENT` (HTTP `429` quota gate). Verified by `apps/api/tests/wp04-3-trading-ocr-api.test.ts`.
 
+### WP-05: Live UI Wiring for Custody Vault, Quant Engines & COE Audit (`COMPLETED_AND_VERIFIED`)
+* **`WP-05.1` (`CONEXOES & OCR/VAULT UI` — `COMPLETED_AND_VERIFIED`)**: Wire `src/app/investimentos/conexoes/page.tsx` to `PARSE_SINACOR_B3`, `STORE_BROKER_KEY`, and `INGEST_OCR_STATEMENT` endpoints. Verified by `apps/api/tests/wp05-1-conexoes-integration.test.ts`.
+* **`WP-05.2` (`AGENT QUANT ENGINES UI` — `COMPLETED_AND_VERIFIED`)**: Wire `src/app/agent/page.tsx` (`?engine=markowitz|dcf|black-litterman|trading|gorules`) to live `RUN_DCF`, `RUN_MARKOWITZ_BL`, `RUN_GARCH_KALMAN`, and `BUILD_AGENT_DIGEST` endpoints. Verified by `apps/api/tests/wp05-2-agent-engines.test.ts`.
+* **`WP-05.3` (`COE LIVE OPPORTUNITY AUDIT UI` — `COMPLETED_AND_VERIFIED`)**: Wire `src/app/produtos/[categoria]/page.tsx` to `AUDIT_COE` via `POST /api/escalate/custody`. Verified by `apps/api/tests/wp05-3-coe-live-audit.test.ts`.
+
 ### Legacy Waves 1–4 (Baseline Simulator Features — Maintained)
 * Preserves pure validator (`src/core/validadorSimulacao.ts` / `src/core/finance/`), Drizzle RLS (`src/db/schema.ts`), and Upstash rate-limited API handlers (`src/app/api/*`).
 

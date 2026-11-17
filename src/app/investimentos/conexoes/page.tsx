@@ -23,6 +23,101 @@ export default function ConexoesPage() {
   } | null>(null);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [isVaultHighlighted, setIsVaultHighlighted] = useState(false);
+  const [sinacorBatchResult, setSinacorBatchResult] = useState<{
+    assetsCount: number;
+    llmTokensUsed: number;
+  } | null>(null);
+  const [loadingSinacor, setLoadingSinacor] = useState(false);
+  const [vaultEnvelopeProof, setVaultEnvelopeProof] = useState<{
+    keyId: string;
+    provider: string;
+    ivHex: string;
+    authTagHex: string;
+  } | null>(null);
+  const [loadingVault, setLoadingVault] = useState(false);
+
+  async function handleSinacorBatchTrigger() {
+    setLoadingSinacor(true);
+    try {
+      const res = await fetch("/api/escalate/custody", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "PARSE_SINACOR_B3",
+          rows: [
+            {
+              assetId: "b3-1",
+              ticker: "PETR4",
+              rawCategory: "EQUITY_BR",
+              quantity: "100",
+              unitPrice: "38.50",
+              expectedReturnAnnual: "0.14",
+              liquidityDays: "2",
+            },
+            {
+              assetId: "b3-2",
+              ticker: "TESOURO-IPCA-2035",
+              rawCategory: "TESOURO",
+              quantity: "10",
+              unitPrice: "3100.00",
+              expectedReturnAnnual: "0.12",
+              liquidityDays: "1",
+            },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const assets = Array.isArray(data.assets)
+          ? data.assets
+          : Array.isArray(data.data?.assets)
+            ? data.data.assets
+            : [];
+        const tokens =
+          typeof data.llmTokensUsed === "number"
+            ? data.llmTokensUsed
+            : typeof data.data?.llmTokensUsed === "number"
+              ? data.data.llmTokensUsed
+              : 0;
+        setSinacorBatchResult({
+          assetsCount: assets.length,
+          llmTokensUsed: tokens,
+        });
+      }
+    } finally {
+      setLoadingSinacor(false);
+    }
+  }
+
+  async function handleVaultSealTrigger() {
+    setLoadingVault(true);
+    try {
+      const res = await fetch("/api/escalate/custody", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "STORE_BROKER_KEY",
+          keyId: "binance-ro-01",
+          provider: "BINANCE_READONLY",
+          plaintextKey:
+            "demo-readonly-binance-key-64-chars-minimum-length-for-aes-256-gcm",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const source =
+          data.record ?? data.envelope ?? data.vaultRecord ?? data.data ?? data;
+        setVaultEnvelopeProof({
+          keyId: String(source?.keyId ?? "binance-ro-01"),
+          provider: String(source?.provider ?? "BINANCE_READONLY"),
+          ivHex: String(source?.ivHex ?? ""),
+          authTagHex: String(source?.authTagHex ?? ""),
+        });
+      }
+    } finally {
+      setLoadingVault(false);
+    }
+  }
 
   async function handleTriggerSync(
     providerType: "OPEN_FINANCE_SANDBOX" | "B3_CSV" | "MANUAL",
@@ -92,16 +187,88 @@ export default function ConexoesPage() {
         <VaultTabSync onVaultMode={setIsVaultHighlighted} />
       </Suspense>
 
-      {isVaultHighlighted && (
-        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-accent-quant)] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <section
+        className={`bg-[var(--ds-surface-card)] border ${
+          isVaultHighlighted
+            ? "border-[var(--ds-accent-quant)]"
+            : "border-[var(--ds-border-subtle)]"
+        } rounded-xl p-4 space-y-3`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-accent-quant)]">
             [AES-256-GCM API VAULT ACTIVE]: Credenciais e tokens read-only cifrados com chave mestre isolada e rotacao automatica.
           </div>
-          <span className="text-[11px] tabular-financial px-2 py-0.5 rounded bg-[var(--ds-market-positive)]/10 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30">
-            0-TOKEN PARSER
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] tabular-financial px-2 py-0.5 rounded bg-[var(--ds-market-positive)]/10 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30">
+              0-TOKEN PARSER
+            </span>
+            <button
+              type="button"
+              disabled={loadingVault}
+              onClick={handleVaultSealTrigger}
+              className="py-1.5 px-3 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
+            >
+              Selar Chave Read-Only (AES-256-GCM)
+            </button>
+          </div>
         </div>
-      )}
+
+        {vaultEnvelopeProof && (
+          <div className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] rounded-lg p-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-[family-name:var(--ds-font-mono)] tabular-financial">
+            <div className="text-[var(--ds-text-secondary)]">
+              KEY ID / PROVIDER:{" "}
+              <span className="text-[var(--ds-text-primary)] tabular-financial">
+                {vaultEnvelopeProof.keyId} ({vaultEnvelopeProof.provider})
+              </span>
+            </div>
+            <div className="text-[var(--ds-text-secondary)]">
+              IV (96-BIT HEX):{" "}
+              <span className="text-[var(--ds-accent-quant)] tabular-financial">
+                {vaultEnvelopeProof.ivHex}
+              </span>
+            </div>
+            <div className="md:col-span-2 text-[var(--ds-text-secondary)]">
+              AUTH TAG (128-BIT HEX):{" "}
+              <span className="text-[var(--ds-market-positive)] tabular-financial">
+                {vaultEnvelopeProof.authTagHex}
+              </span>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* SINACOR / B3 0-Token Deterministic Trigger */}
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
+              Motor SINACOR / B3 — Ingestao Deterministica Zero-LLM
+            </h2>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
+              Converte lotes brutos SINACOR/B3 em vetores matematicos exatos Decimal.js sem consumo de tokens de LLM.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={loadingSinacor}
+            onClick={handleSinacorBatchTrigger}
+            className="py-2 px-3 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-market-positive)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
+          >
+            Simular Lote SINACOR/B3 (0 Tokens)
+          </button>
+        </div>
+
+        {sinacorBatchResult && (
+          <div className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] rounded-lg p-3 flex items-center justify-between text-xs font-[family-name:var(--ds-font-mono)] tabular-financial">
+            <span className="text-[var(--ds-text-primary)] tabular-financial">
+              Ativos Normalizados: {sinacorBatchResult.assetsCount}
+            </span>
+            <span className="px-2 py-0.5 rounded bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30 tabular-financial">
+              llmTokensUsed: {sinacorBatchResult.llmTokensUsed}
+            </span>
+          </div>
+        )}
+      </section>
 
       {/* Active Connected Institutions */}
       <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
