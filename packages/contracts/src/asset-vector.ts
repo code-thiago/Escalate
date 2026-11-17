@@ -85,3 +85,35 @@ export function enforceCvmResolution20Grammar(text: string): {
     sanitizedText: `${text}\n\n[DISCLAIMER CVM]: Simulacao estritamente matematica e educacional baseada nos parametros informados pelo usuario. Nao configura recomendacao de investimento (Resolucao CVM 20).`,
   };
 }
+
+export const EncryptedApiVaultRecordSchema = z.object({
+  keyId: z.string().min(1),
+  provider: z.enum(['BINANCE_READONLY', 'B3_CEI']),
+  ciphertextHex: z.string().regex(/^[0-9a-fA-F]+$/),
+  ivHex: z.string().length(24),
+  authTagHex: z.string().length(32),
+  createdAt: z.string().datetime(),
+});
+
+export type EncryptedApiVaultRecord = z.infer<typeof EncryptedApiVaultRecordSchema>;
+
+export const BlackLittermanViewSchema = z.object({
+  ticker: z.string().min(1),
+  directionalShock: z.number().min(-0.30).max(0.30),
+  confidenceOmega: z.number().min(0.01).max(0.99),
+  rationaleDigest: z.string().max(280),
+});
+
+export type BlackLittermanView = z.infer<typeof BlackLittermanViewSchema>;
+
+export const CoeOpportunityAuditSchema = z.object({
+  coeTicker: z.string().min(1),
+  expectedReturnAnnual: z.number(),
+  cdiBenchmarkAnnual: z.number(),
+  liquidityDays: z.number().int().min(0),
+  illiquidityPenaltyAnnual: z.number(),
+  netSpreadVsCdiAnnual: z.number(),
+  verdict: z.enum(['SUBOPTIMAL_VS_CDI', 'COMPETITIVE']),
+});
+
+export type CoeOpportunityAudit = z.infer<typeof CoeOpportunityAuditSchema>;
