@@ -6,38 +6,33 @@ import { formatarMoeda } from "@/src/lib/formatters";
 import BlocoSalvarSimulacao from "./BlocoSalvarSimulacao";
 import GraficoEvolucao from "./GraficoEvolucao";
 
-const VALOR_MAXIMO = 1_000_000_000; // R$ 1 bilhão
+const VALOR_MAXIMO = 1_000_000_000; // R$ 1 bilhao
 const TAXA_MAXIMA = 100; // 100% a.a.
 const PERIODO_MAXIMO_MESES = 1200; // 100 anos
-const RESULTADO_MAXIMO_EXIBIVEL = 1_000_000_000_000_000; // R$ 1 quatrilhão
+const RESULTADO_MAXIMO_EXIBIVEL = 1_000_000_000_000_000; // R$ 1 quatrilhao
 
 export default function SimuladorJurosCompostos() {
   const [isMounted, setIsMounted] = useState(false);
 
-  // Estados dos inputs gerenciados como string para permitir edição fluida (ex: limpar o campo)
   const [valorInicialStr, setValorInicialStr] = useState<string>("1000");
   const [aporteMensalStr, setAporteMensalStr] = useState<string>("100");
   const [taxaAnualStr, setTaxaAnualStr] = useState<string>("12");
   const [periodoStr, setPeriodoStr] = useState<string>("5");
   const [periodoUnidade, setPeriodoUnidade] = useState<"meses" | "anos">("anos");
 
-  // Ativar montagem no client para evitar mismatch de hidratação com o Recharts
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Parsing numérico com fallback seguro
   const valorInicial = valorInicialStr === "" ? 0 : parseFloat(valorInicialStr);
   const aporteMensal = aporteMensalStr === "" ? 0 : parseFloat(aporteMensalStr);
   const taxaAnual = taxaAnualStr === "" ? 0 : parseFloat(taxaAnualStr);
   const periodo = periodoStr === "" ? 0 : parseFloat(periodoStr);
 
-  // Conversão de período para meses
   const periodoMeses = Math.round(
     periodoUnidade === "anos" ? periodo * 12 : periodo
   );
 
-  // Validação estrita de entrada na UI para evitar propagar erros para a função core
   const isInputValid =
     !isNaN(valorInicial) &&
     valorInicial >= 0 &&
@@ -54,7 +49,6 @@ export default function SimuladorJurosCompostos() {
     periodoMeses > 0 &&
     periodoMeses <= PERIODO_MAXIMO_MESES;
 
-  // Memoização do cálculo de juros compostos
   const pontosCalculados: PontoEvolucao[] = useMemo(() => {
     if (!isInputValid) return [];
     try {
@@ -65,12 +59,10 @@ export default function SimuladorJurosCompostos() {
         periodoMeses,
       });
     } catch {
-      // Falha silenciosa de segurança para a UI
       return [];
     }
   }, [valorInicial, aporteMensal, taxaAnual, periodoMeses, isInputValid]);
 
-  // Verificar se o valor final calculado excede o teto exibível ou resulta em overflow numérico
   const valorCalculadoFinal =
     isInputValid && pontosCalculados.length > 0
       ? pontosCalculados[pontosCalculados.length - 1].valorTotal
@@ -86,7 +78,6 @@ export default function SimuladorJurosCompostos() {
     [isValid, pontosCalculados]
   );
 
-  // Prepara dados do gráfico injetando o ponto inicial (Mês 0) com memoização
   const dadosGrafico: PontoEvolucao[] = useMemo(() => {
     if (!isValid) return [];
     const pontoZero: PontoEvolucao = {
@@ -98,12 +89,10 @@ export default function SimuladorJurosCompostos() {
     return [pontoZero, ...pontos];
   }, [isValid, valorInicial, pontos]);
 
-  // Valores de resumo derivados dos pontos calculados
   const valorFinalTotal = isValid && pontos.length > 0 ? pontos[pontos.length - 1].valorTotal : 0;
   const totalInvestido = isValid && pontos.length > 0 ? pontos[pontos.length - 1].valorInvestido : 0;
   const totalJuros = isValid && pontos.length > 0 ? pontos[pontos.length - 1].jurosAcumulados : 0;
 
-  // Parâmetros memoizados para salvar simulação sem gerar novos objetos em re-renders desnecessários
   const parametrosSalvar = useMemo(() => ({
     valorInicial,
     aporteMensal,
@@ -114,71 +103,65 @@ export default function SimuladorJurosCompostos() {
   }), [valorInicial, aporteMensal, taxaAnual, periodo, periodoUnidade, periodoMeses]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 p-4 md:p-8">
-      {/* Cabeçalho */}
+    <div className="w-full max-w-6xl mx-auto flex flex-col gap-8">
+      {/* Cabecalho */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h2 className="text-2xl font-bold tracking-tight text-[var(--ds-text-primary)]">
           Simulador de Juros Compostos
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Projete o crescimento do seu patrimônio com aportes mensais e juros compostos.
+        </h2>
+        <p className="text-xs text-[var(--ds-text-secondary)] mt-1">
+          Projete o crescimento do seu patrimonio com aportes mensais e juros compostos.
         </p>
       </div>
 
-      {/* Grid Principal: Lado a Lado no Desktop (lg:grid-cols-12), Coluna no Mobile */}
+      {/* Grid Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Lado Esquerdo: Resumo + Formulário */}
+        {/* Lado Esquerdo: Resumo + Formulario */}
         <div className="lg:col-span-5 flex flex-col gap-6 w-full">
-          
-          {/* 2. Resumo em Destaque no Topo */}
+          {/* Resumo em Destaque no Topo */}
           <div className="flex flex-col gap-4">
-            {/* Card Principal: Valor Final */}
-            <div className="bg-indigo-50/50 dark:bg-zinc-900/50 p-6 rounded-2xl border border-indigo-100 dark:border-zinc-800 transition-all duration-300">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+            <div className="bg-[var(--ds-surface-card)] p-6 rounded-xl border border-[var(--ds-accent-quant)]/40 transition-colors">
+              <span className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                 Valor Total Estimado
               </span>
-              <div className="text-3xl font-bold font-mono tracking-tight text-indigo-900 dark:text-indigo-400 mt-1 tabular-nums">
+              <div className="text-3xl font-bold text-[var(--ds-accent-quant)] mt-1 tabular-financial">
                 {formatarMoeda(valorFinalTotal)}
               </div>
             </div>
 
-            {/* Grid dos Subcards */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Card Investido */}
-              <div className="bg-card p-4 rounded-xl border-l-4 border-investido border-t border-r border-b border-border shadow-sm transition-all duration-300">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+              <div className="bg-[var(--ds-surface-card)] p-4 rounded-xl border-l-4 border-l-[var(--ds-text-secondary)] border-t border-r border-b border-[var(--ds-border-subtle)] transition-colors">
+                <span className="text-[10px] font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                   Total Investido
                 </span>
-                <div className="text-lg font-bold font-mono text-foreground mt-1 tabular-nums">
+                <div className="text-lg font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
                   {formatarMoeda(totalInvestido)}
                 </div>
               </div>
 
-              {/* Card Juros */}
-              <div className="bg-card p-4 rounded-xl border-l-4 border-juros border-t border-r border-b border-border shadow-sm transition-all duration-300">
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+              <div className="bg-[var(--ds-surface-card)] p-4 rounded-xl border-l-4 border-l-[var(--ds-market-positive)] border-t border-r border-b border-[var(--ds-border-subtle)] transition-colors">
+                <span className="text-[10px] font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                   Total em Juros
                 </span>
-                <div className="text-lg font-bold font-mono text-juros dark:text-indigo-400 mt-1 tabular-nums">
+                <div className="text-lg font-bold text-[var(--ds-market-positive)] mt-1 tabular-financial">
                   {formatarMoeda(totalJuros)}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 1. Formulário */}
-          <div className="bg-card p-6 rounded-2xl border border-border dark:border-zinc-800 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider border-b border-border pb-2">
-              Configurações do Investimento
-            </h2>
+          {/* Formulario */}
+          <div className="bg-[var(--ds-surface-card)] p-6 rounded-xl border border-[var(--ds-border-subtle)] space-y-4">
+            <h3 className="text-sm font-bold font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] uppercase tracking-wider border-b border-[var(--ds-border-subtle)] pb-2">
+              Configuracoes do Investimento
+            </h3>
 
-            {/* Campo: Valor Inicial */}
             <div className="space-y-1.5">
-              <label htmlFor="valorInicial" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+              <label htmlFor="valorInicial" className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                 Valor Inicial (R$)
               </label>
-              <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium select-none">
+              <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--ds-text-secondary)] font-medium select-none tabular-financial">
                   R$
                 </span>
                 <input
@@ -190,18 +173,17 @@ export default function SimuladorJurosCompostos() {
                   placeholder="0,00"
                   value={valorInicialStr}
                   onChange={(e) => setValorInicialStr(e.target.value)}
-                  className="w-full bg-muted pl-9 pr-3 py-2.5 text-base font-semibold text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                  className="w-full bg-[var(--ds-bg-primary)] pl-9 pr-3 py-2.5 text-base font-semibold text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50 tabular-financial"
                 />
               </div>
             </div>
 
-            {/* Campo: Aporte Mensal */}
             <div className="space-y-1.5">
-              <label htmlFor="aporteMensal" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+              <label htmlFor="aporteMensal" className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                 Aporte Mensal (R$)
               </label>
-              <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium select-none">
+              <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--ds-text-secondary)] font-medium select-none tabular-financial">
                   R$
                 </span>
                 <input
@@ -213,19 +195,17 @@ export default function SimuladorJurosCompostos() {
                   placeholder="0,00"
                   value={aporteMensalStr}
                   onChange={(e) => setAporteMensalStr(e.target.value)}
-                  className="w-full bg-muted pl-9 pr-3 py-2.5 text-base font-semibold text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                  className="w-full bg-[var(--ds-bg-primary)] pl-9 pr-3 py-2.5 text-base font-semibold text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50 tabular-financial"
                 />
               </div>
             </div>
 
-            {/* Grid: Taxa de Juros e Período */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Campo: Taxa Anual */}
               <div className="space-y-1.5">
-                <label htmlFor="taxaAnual" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                <label htmlFor="taxaAnual" className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
                   Taxa de Juros Anual (%)
                 </label>
-                <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
+                <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
                   <input
                     id="taxaAnual"
                     type="number"
@@ -235,20 +215,19 @@ export default function SimuladorJurosCompostos() {
                     placeholder="0"
                     value={taxaAnualStr}
                     onChange={(e) => setTaxaAnualStr(e.target.value)}
-                    className="w-full bg-muted px-3 py-2.5 text-base font-semibold text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                    className="w-full bg-[var(--ds-bg-primary)] px-3 py-2.5 text-base font-semibold text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50 tabular-financial"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-medium select-none pointer-events-none">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[var(--ds-text-secondary)] font-medium select-none pointer-events-none tabular-financial">
                     % a.a.
                   </span>
                 </div>
               </div>
 
-              {/* Campo: Período com Toggle Integrado */}
               <div className="space-y-1.5">
-                <label htmlFor="periodo" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
-                  Período
+                <label htmlFor="periodo" className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block">
+                  Periodo
                 </label>
-                <div className="flex rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all bg-muted">
+                <div className="flex rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors bg-[var(--ds-bg-primary)]">
                   <input
                     id="periodo"
                     type="number"
@@ -258,16 +237,16 @@ export default function SimuladorJurosCompostos() {
                     placeholder="0"
                     value={periodoStr}
                     onChange={(e) => setPeriodoStr(e.target.value)}
-                    className="w-full min-w-0 bg-transparent px-3 py-2.5 text-base font-semibold text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                    className="w-full min-w-0 bg-transparent px-3 py-2.5 text-base font-semibold text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50 tabular-financial"
                   />
-                  <div className="flex items-center gap-1 border-l border-border dark:border-zinc-800 px-2 py-1 bg-muted select-none">
+                  <div className="flex items-center gap-1 border-l border-[var(--ds-border-subtle)] px-2 py-1 bg-[var(--ds-surface-elevated)] select-none">
                     <button
                       type="button"
                       onClick={() => setPeriodoUnidade("meses")}
-                      className={`px-2 py-1 text-[10px] font-bold rounded transition-colors ${
+                      className={`px-2 py-1 text-[10px] font-bold rounded transition-colors cursor-pointer ${
                         periodoUnidade === "meses"
-                          ? "bg-juros text-white"
-                          : "text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                          ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                          : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
                       }`}
                     >
                       Meses
@@ -275,10 +254,10 @@ export default function SimuladorJurosCompostos() {
                     <button
                       type="button"
                       onClick={() => setPeriodoUnidade("anos")}
-                      className={`px-2 py-1 text-[10px] font-bold rounded transition-colors ${
+                      className={`px-2 py-1 text-[10px] font-bold rounded transition-colors cursor-pointer ${
                         periodoUnidade === "anos"
-                          ? "bg-juros text-white"
-                          : "text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                          ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                          : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
                       }`}
                     >
                       Anos
@@ -288,15 +267,13 @@ export default function SimuladorJurosCompostos() {
               </div>
             </div>
 
-            {/* Aviso de erro/validação amigável */}
             {!isValid && (
-              <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-2 bg-indigo-50/30 dark:bg-indigo-950/20 p-2.5 rounded-lg border border-indigo-100/50 dark:border-indigo-950/30 font-medium">
-                ⚠️ Insira um período válido (maior que 0 e até 100 anos), uma taxa entre 0% e 100%, e valores até R$ 1 bilhão para simular. Se o resultado for maior que R$ 1 quatrilhão, reduza os valores de entrada.
+              <div className="text-xs text-[var(--ds-market-warning)] mt-2 bg-[var(--ds-market-warning)]/10 p-2.5 rounded-lg border border-[var(--ds-market-warning)]/30 font-[family-name:var(--ds-font-mono)]">
+                [ALERTA DE VALIDACAO]: Insira um periodo valido (maior que 0 e ate 100 anos), uma taxa entre 0% e 100%, e valores ate R$ 1 bilhao para simular. Se o resultado for maior que R$ 1 quatrilhao, reduza os valores de entrada.
               </div>
             )}
           </div>
 
-          {/* Bloco de Salvar Simulação (isolado em componente próprio para não re-renderizar o pai) */}
           <BlocoSalvarSimulacao
             tipo="juros_compostos"
             parametros={parametrosSalvar}
@@ -304,7 +281,7 @@ export default function SimuladorJurosCompostos() {
           />
         </div>
 
-        {/* Lado Direito: Gráfico de Evolução Patrimonial (memoizado) */}
+        {/* Lado Direito: Grafico */}
         <div className="lg:col-span-7 w-full">
           <GraficoEvolucao
             dados={dadosGrafico}

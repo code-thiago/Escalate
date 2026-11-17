@@ -106,23 +106,34 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
     };
   }, [meta.productClass, holdingDays, isExemptTax, feeBps, analysis.guaranteeMatrix.fgcEligible]);
 
+  const showEquityTickerWidget =
+    meta.slug === "bolsa" || meta.slug === "bolsa-br" || meta.slug === "bolsa-global";
+
   return (
     <PlatformShell
       title={`Analise Critica System Design — ${meta.title}`}
       subtitle={meta.systemDesignFocus}
       actions={
-        <Link
-          href="/produtos"
-          className="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
-        >
-          Todas as 8 Categorias
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/investimentos/carteira?classe=${meta.productClass}`}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity"
+          >
+            Ver Posicoes na Carteira -&gt;
+          </Link>
+          <Link
+            href="/produtos"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors"
+          >
+            Todas as Categorias
+          </Link>
+        </div>
       }
     >
       <div className="space-y-6">
         {/* Category Switcher Bar */}
         <nav
-          aria-label="Navegacao entre as 8 Classes de Produtos"
+          aria-label="Navegacao entre as Classes de Produtos"
           className="flex flex-wrap gap-2 pb-2"
         >
           {PRODUCT_CATEGORIES_CATALOG.map((c) => {
@@ -131,10 +142,10 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
               <Link
                 key={c.slug}
                 href={`/produtos/${c.slug}`}
-                className={`px-3 py-1.5 rounded text-xs font-mono transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] transition-colors border ${
                   active
-                    ? "bg-indigo-600 text-white font-semibold"
-                    : "bg-[#0f172a] border border-slate-800 text-slate-300 hover:border-slate-700"
+                    ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] border-[var(--ds-accent-quant)] font-semibold"
+                    : "bg-[var(--ds-surface-card)] border-[var(--ds-border-subtle)] text-[var(--ds-text-secondary)] hover:border-[var(--ds-accent-quant)] hover:text-[var(--ds-text-primary)]"
                 }`}
               >
                 {c.shortTitle}
@@ -145,23 +156,25 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
 
         {/* Renda Fixa Sub-Tabs */}
         {meta.slug === "renda-fixa" && (
-          <div className="flex items-center gap-2 p-1 bg-[#0f172a] rounded-lg border border-slate-800 w-fit">
+          <div className="flex items-center gap-2 p-1 bg-[var(--ds-surface-card)] rounded-lg border border-[var(--ds-border-subtle)] w-fit">
             <button
+              type="button"
               onClick={() => setActiveRendaFixaTab("analise")}
-              className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded text-xs font-[family-name:var(--ds-font-mono)] font-semibold transition-colors cursor-pointer ${
                 activeRendaFixaTab === "analise"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                  : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
               }`}
             >
               Analise Critica System Design
             </button>
             <button
+              type="button"
               onClick={() => setActiveRendaFixaTab("comparador")}
-              className={`px-3 py-1.5 rounded text-xs font-mono font-semibold transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded text-xs font-[family-name:var(--ds-font-mono)] font-semibold transition-colors cursor-pointer ${
                 activeRendaFixaTab === "comparador"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                  : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
               }`}
             >
               Comparador Interativo (CDB x Selic x Poupanca)
@@ -170,7 +183,7 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
         )}
 
         {/* Bolsa de Valores Live B3 Ticker Widget */}
-        {meta.slug === "bolsa" && <AcoesB3Widget />}
+        {showEquityTickerWidget && <AcoesB3Widget />}
 
         {/* Cambio e Remessas Live FX Widget */}
         {meta.slug === "cambio" && <CambioWidget />}
@@ -183,16 +196,16 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
         ) : (
           <>
             {/* Interactive Simulation Input Controls */}
-            <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-              <h3 className="text-sm font-semibold text-slate-100">
-                Parametros de Estresse & Simulacao Critica ({meta.defaultProductName})
-              </h3>
+            <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+              <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+                Parametros de Estresse &amp; Simulacao Critica ({meta.defaultProductName})
+              </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <label
                     htmlFor="input-invested"
-                    className="block text-xs font-mono text-slate-400 mb-1"
+                    className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
                   >
                     Capital Alocado (R$)
                   </label>
@@ -203,14 +216,14 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                     step={1000}
                     value={investedReais}
                     onChange={(e) => setInvestedReais(Number(e.target.value) || 1000)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs font-mono text-slate-100 tabular-nums"
+                    className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="input-rate"
-                    className="block text-xs font-mono text-slate-400 mb-1"
+                    className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
                   >
                     Taxa Bruta Nominal (bps a.a.)
                   </label>
@@ -222,14 +235,14 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                     step={25}
                     value={annualRateBps}
                     onChange={(e) => setAnnualRateBps(Number(e.target.value) || 0)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs font-mono text-slate-100 tabular-nums"
+                    className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="input-days"
-                    className="block text-xs font-mono text-slate-400 mb-1"
+                    className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
                   >
                     Prazo de Retencao (Dias)
                   </label>
@@ -241,14 +254,14 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                     step={30}
                     value={holdingDays}
                     onChange={(e) => setHoldingDays(Number(e.target.value) || 30)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs font-mono text-slate-100 tabular-nums"
+                    className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="input-fee"
-                    className="block text-xs font-mono text-slate-400 mb-1"
+                    className="block text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mb-1"
                   >
                     Taxa / Spread / Custodia (bps)
                   </label>
@@ -260,17 +273,17 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                     step={10}
                     value={feeBps}
                     onChange={(e) => setFeeBps(Number(e.target.value) || 0)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs font-mono text-slate-100 tabular-nums"
+                    className="w-full bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
                   />
                 </div>
 
                 <div className="flex flex-col justify-end">
-                  <label className="flex items-center gap-2 text-xs font-mono text-slate-300 bg-slate-900 border border-slate-700 rounded px-3 py-2 cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isExemptTax}
                       onChange={(e) => setIsExemptTax(e.target.checked)}
-                      className="accent-indigo-500"
+                      className="accent-[var(--ds-accent-quant)]"
                     />
                     Isento de IR (LCI/LCA/CRI)
                   </label>
@@ -281,44 +294,51 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
             {/* THE 5 MANDATORY SYSTEM DESIGN CRITICAL ANALYSIS BLOCKS */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* BLOCK 1: Net Real Return Engine */}
-              <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-                <div className="border-b border-slate-800 pb-3">
-                  <span className="font-mono text-[10px] uppercase text-indigo-400">
-                    Bloco 01 — Motor Tributario & Inflacionario
+              <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+                <div className="border-b border-[var(--ds-border-subtle)] pb-3">
+                  <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
+                    Bloco 01 — Motor Tributario &amp; Inflacionario
                   </span>
-                  <h4 className="text-sm font-semibold text-slate-100">
+                  <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
                     Retorno Liquido Real (Equacao Exata de Fisher)
-                  </h4>
+                  </h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs font-mono tabular-nums">
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Rendimento Bruto</div>
-                    <div className="text-sm font-bold text-slate-100 mt-0.5">
+                <div className="grid grid-cols-2 gap-3 text-xs tabular-financial">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Rendimento Bruto
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.netRealReturn.grossYieldCents)} (
                       {formatBpsPercent(analysis.netRealReturn.grossYieldBps)})
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Imposto de Renda Retido</div>
-                    <div className="text-sm font-bold text-rose-400 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Imposto de Renda Retido
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-market-negative)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.netRealReturn.irCents)} (
                       {formatBpsPercent(analysis.netRealReturn.effectiveTaxRateBps)})
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Erosao Inflacionaria (IPCA)</div>
-                    <div className="text-sm font-bold text-amber-400 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Erosao Inflacionaria (IPCA)
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-market-warning)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.netRealReturn.inflationDiscountCents)}
-
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Ganho Real Liquido Final</div>
-                    <div className="text-sm font-bold text-emerald-400 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Ganho Real Liquido Final
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-market-positive)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.netRealReturn.realNetYieldCents)} (
                       {formatBpsPercent(analysis.netRealReturn.realNetYieldBps, true)})
                     </div>
@@ -327,36 +347,36 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
               </section>
 
               {/* BLOCK 2: Hidden Costs & Asymmetry Scanner */}
-              <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-                <div className="border-b border-slate-800 pb-3">
-                  <span className="font-mono text-[10px] uppercase text-amber-400">
-                    Bloco 02 — Auditoria de Friccao & Assimetria
+              <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+                <div className="border-b border-[var(--ds-border-subtle)] pb-3">
+                  <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-market-warning)]">
+                    Bloco 02 — Auditoria de Friccao &amp; Assimetria
                   </span>
-                  <h4 className="text-sm font-semibold text-slate-100">
+                  <h3 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
                     Scanner de Custos Ocultos (Drag Total:{" "}
                     {formatBpsPercent(analysis.hiddenCosts.totalHiddenCostBps)})
-                  </h4>
+                  </h3>
                 </div>
 
                 <div className="space-y-2.5">
                   {analysis.hiddenCosts.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="bg-slate-900/80 border border-slate-800 rounded p-3 flex items-start justify-between gap-4"
+                      className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 flex items-start justify-between gap-4"
                     >
                       <div>
-                        <div className="text-xs font-semibold text-slate-200">
+                        <div className="text-xs font-semibold text-[var(--ds-text-primary)]">
                           {item.name}
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
+                        <p className="text-[11px] text-[var(--ds-text-secondary)] mt-0.5">
                           {item.description}
                         </p>
                       </div>
-                      <div className="text-right font-mono text-xs tabular-nums shrink-0">
-                        <div className="text-amber-400 font-semibold">
+                      <div className="text-right text-xs tabular-financial shrink-0">
+                        <div className="text-[var(--ds-market-warning)] font-semibold tabular-financial">
                           {formatBpsPercent(item.costBps)}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-[var(--ds-text-secondary)] tabular-financial">
                           {formatCentsBRL(item.costCents)}
                         </div>
                       </div>
@@ -366,73 +386,83 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
               </section>
 
               {/* BLOCK 3: Guarantee & Credit Risk Matrix */}
-              <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-                <div className="border-b border-slate-800 pb-3">
-                  <span className="font-mono text-[10px] uppercase text-cyan-400">
-                    Bloco 03 — Risco de Contraparte & Garantias
+              <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+                <div className="border-b border-[var(--ds-border-subtle)] pb-3">
+                  <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
+                    Bloco 03 — Risco de Contraparte &amp; Garantias
                   </span>
-                  <h4 className="text-sm font-semibold text-slate-100">
-                    Matriz FGC & Risco de Credito ({analysis.guaranteeMatrix.creditRiskType})
-                  </h4>
+                  <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+                    Matriz FGC &amp; Risco de Credito ({analysis.guaranteeMatrix.creditRiskType})
+                  </h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs font-mono tabular-nums">
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Cobertura FGC Ativa</div>
-                    <div className="text-sm font-bold text-slate-100 mt-0.5">
+                <div className="grid grid-cols-2 gap-3 text-xs tabular-financial">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Cobertura FGC Ativa
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-text-primary)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.guaranteeMatrix.fgcCoveredCents)}
                     </div>
                   </div>
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-                    <div className="text-slate-400">Saldo Descoberto (Risco Direto)</div>
-                    <div className="text-sm font-bold text-amber-400 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+                    <div className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Saldo Descoberto (Risco Direto)
+                    </div>
+                    <div className="text-sm font-bold text-[var(--ds-market-warning)] mt-0.5 tabular-financial">
                       {formatCentsBRL(analysis.guaranteeMatrix.fgcUncoveredCents)}
                     </div>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-300 bg-slate-900/60 border border-slate-800 rounded p-3 leading-relaxed">
+                <p className="text-xs text-[var(--ds-text-secondary)] bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 leading-relaxed">
                   {analysis.guaranteeMatrix.explanation}
                 </p>
               </section>
 
               {/* BLOCK 4 & 5: Opportunity Cost Benchmarking & GoRules ZEN Deterministic Scorecard */}
-              <section className="bg-[#0f172a] border border-indigo-500/40 rounded-lg p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-accent-quant)]/40 rounded-xl p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-[var(--ds-border-subtle)] pb-3">
                   <div>
-                    <span className="font-mono text-[10px] uppercase text-indigo-400">
-                      Blocos 04 & 05 — Custo de Oportunidade & GoRules ZEN Engine
+                    <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
+                      Blocos 04 &amp; 05 — Custo de Oportunidade &amp; GoRules ZEN Engine
                     </span>
-                    <h4 className="text-sm font-semibold text-slate-100">
+                    <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
                       Scorecard Deterministico ({analysis.benchmarking.benchmarkComparisonName})
-                    </h4>
+                    </h3>
                   </div>
-                  <div className="text-right font-mono tabular-nums">
-                    <span className="text-2xl font-bold text-indigo-400">
+                  <div className="text-right tabular-financial">
+                    <span className="text-2xl font-bold text-[var(--ds-accent-quant)] tabular-financial">
                       {deterministicScore.score}/100
                     </span>
-                    <div className="text-[10px] text-slate-400">
+                    <div className="text-[10px] text-[var(--ds-text-secondary)] tabular-financial">
                       RISCO: {deterministicScore.grade}
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 text-xs font-mono tabular-nums">
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-2.5">
-                    <div className="text-[10px] text-slate-400">Spread vs CDI</div>
-                    <div className="font-semibold text-slate-100 mt-0.5">
+                <div className="grid grid-cols-3 gap-2 text-xs tabular-financial">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-2.5">
+                    <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Spread vs CDI
+                    </div>
+                    <div className="font-semibold text-[var(--ds-text-primary)] mt-0.5 tabular-financial">
                       {formatBpsPercent(analysis.benchmarking.cdiSpreadBps, true)}
                     </div>
                   </div>
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-2.5">
-                    <div className="text-[10px] text-slate-400">Spread vs Selic</div>
-                    <div className="font-semibold text-slate-100 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-2.5">
+                    <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Spread vs Selic
+                    </div>
+                    <div className="font-semibold text-[var(--ds-text-primary)] mt-0.5 tabular-financial">
                       {formatBpsPercent(analysis.benchmarking.selicSpreadBps, true)}
                     </div>
                   </div>
-                  <div className="bg-slate-900/80 border border-slate-800 rounded p-2.5">
-                    <div className="text-[10px] text-slate-400">Alpha vs Livre de Risco</div>
-                    <div className="font-semibold text-emerald-400 mt-0.5">
+                  <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-2.5">
+                    <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                      Alpha vs Livre de Risco
+                    </div>
+                    <div className="font-semibold text-[var(--ds-market-positive)] mt-0.5 tabular-financial">
                       {formatCentsBRL(
                         analysis.benchmarking.opportunityCostVsRiskFreeCents,
                       )}
@@ -440,7 +470,7 @@ export default function ProdutoCategoriaCriticalAnalysisPage({
                   </div>
                 </div>
 
-                <div className="bg-indigo-950/30 border border-indigo-500/40 rounded p-3 font-mono text-xs text-indigo-200">
+                <div className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-accent-quant)]/40 rounded-lg p-3 font-[family-name:var(--ds-font-mono)] text-xs text-[var(--ds-text-primary)]">
                   [DECISAO JDM]: {deterministicScore.verdict}
                 </div>
               </section>

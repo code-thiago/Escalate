@@ -18,18 +18,17 @@ export default function BlocoSalvarSimulacao({
   tipo,
   parametros,
   isValid,
-  titulo = tipo === "juros_compostos" ? "Salvar Simulação" : "Salvar Comparação",
+  titulo = tipo === "juros_compostos" ? "Salvar Simulacao" : "Salvar Comparacao",
   placeholder = tipo === "juros_compostos"
     ? "Ex: Aposentadoria 10 anos"
     : "Ex: CDB vs Selic 12m",
-  botaoTexto = tipo === "juros_compostos" ? "Salvar Simulação" : "Salvar Comparação",
+  botaoTexto = tipo === "juros_compostos" ? "Salvar Simulacao" : "Salvar Comparacao",
   idInput = tipo === "juros_compostos" ? "nomeSimulacao" : "nomeComparacao",
 }: BlocoSalvarSimulacaoProps) {
   const { data: session } = useSession();
   const { salvar, salvando, sucesso, erro } = useSalvarSimulacao();
   const [nomeSimulacao, setNomeSimulacao] = useState("");
 
-  // Só exibe o bloco se o usuário estiver autenticado e a simulação estiver válida
   if (!isValid || !session?.user) {
     return null;
   }
@@ -50,12 +49,12 @@ export default function BlocoSalvarSimulacao({
   };
 
   return (
-    <div className="bg-card p-6 rounded-2xl border border-border dark:border-zinc-800 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
+    <div className="bg-[var(--ds-surface-card)] p-6 rounded-xl border border-[var(--ds-border-subtle)] space-y-4">
+      <div className="flex items-center justify-between border-b border-[var(--ds-border-subtle)] pb-2">
+        <h3 className="text-sm font-bold font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] uppercase tracking-wider">
           {titulo}
-        </h2>
-        <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full">
+        </h3>
+        <span className="text-[10px] font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-market-positive)] bg-[var(--ds-market-positive)]/10 border border-[var(--ds-market-positive)]/30 px-2 py-0.5 rounded-full">
           Logado
         </span>
       </div>
@@ -63,10 +62,10 @@ export default function BlocoSalvarSimulacao({
       {sucesso && (
         <div
           role="status"
-          className="p-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs font-medium flex items-center gap-2"
+          className="p-3 rounded-xl bg-[var(--ds-market-positive)]/10 border border-[var(--ds-market-positive)]/30 text-[var(--ds-market-positive)] text-xs font-medium flex items-center gap-2"
         >
           <svg
-            className="w-4 h-4 text-success shrink-0"
+            className="w-4 h-4 shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -80,8 +79,8 @@ export default function BlocoSalvarSimulacao({
           </svg>
           <span>
             {tipo === "juros_compostos"
-              ? "Simulação salva com sucesso!"
-              : "Comparação salva com sucesso!"}
+              ? "Simulacao salva com sucesso!"
+              : "Comparacao salva com sucesso!"}
           </span>
         </div>
       )}
@@ -89,7 +88,7 @@ export default function BlocoSalvarSimulacao({
       {erro && (
         <div
           role="alert"
-          className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium"
+          className="p-3 rounded-xl bg-[var(--ds-market-negative)]/10 border border-[var(--ds-market-negative)]/30 text-[var(--ds-market-negative)] text-xs font-medium"
         >
           {erro}
         </div>
@@ -99,18 +98,18 @@ export default function BlocoSalvarSimulacao({
         <div className="space-y-1.5">
           <label
             htmlFor={idInput}
-            className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block"
+            className="text-xs font-[family-name:var(--ds-font-mono)] font-semibold text-[var(--ds-text-secondary)] uppercase tracking-wider block"
           >
-            Nome da simulação (opcional)
+            Nome da simulacao (opcional)
           </label>
-          <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
+          <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
             <input
               id={idInput}
               type="text"
               placeholder={placeholder}
               value={nomeSimulacao}
               onChange={(e) => setNomeSimulacao(e.target.value)}
-              className="w-full bg-muted px-3.5 py-2 text-sm font-medium text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+              className="w-full bg-[var(--ds-bg-primary)] px-3.5 py-2 text-sm font-medium text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50"
             />
           </div>
         </div>
@@ -118,12 +117,12 @@ export default function BlocoSalvarSimulacao({
         <button
           type="submit"
           disabled={salvando}
-          className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-2.5 px-4 rounded-xl bg-[var(--ds-accent-quant)] hover:opacity-90 text-[var(--ds-bg-primary)] text-xs font-bold uppercase tracking-wider transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
         >
           {salvando ? (
             <>
               <svg
-                className="animate-spin h-3.5 w-3.5 text-white"
+                className="animate-spin h-3.5 w-3.5"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"

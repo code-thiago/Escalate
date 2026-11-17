@@ -27,6 +27,20 @@ export interface ProductCategoryMeta {
 
 export const PRODUCT_CATEGORIES_CATALOG: ProductCategoryMeta[] = [
   {
+    slug: "tesouro-direto",
+    productClass: "tesouro_direto",
+    title: "Tesouro Direto — Titulos Publicos Federais",
+    shortTitle: "Tesouro Direto",
+    subtitle: "Tesouro Selic, Tesouro IPCA+, Prefixado e Renda+",
+    defaultProductName: "Tesouro IPCA+ 2035 Soberano",
+    defaultInvestedCents: 12000000n,
+    defaultAnnualRateBps: 1125,
+    defaultHoldingDays: 1095,
+    defaultFeeBps: 20,
+    systemDesignFocus:
+      "Risco soberano livre de default domestico, taxa de custodia B3 (0,20% a.a. com isencao ate R$ 10k no Selic) e sensibilidade de Marcacao a Mercado.",
+  },
+  {
     slug: "renda-fixa",
     productClass: "renda_fixa",
     title: "Renda Fixa Bancaria & Credito Privado",
@@ -41,10 +55,66 @@ export const PRODUCT_CATEGORIES_CATALOG: ProductCategoryMeta[] = [
       "Equivalencia tributaria (Isento vs Tributado), tabela regressiva IR/IOF e teto FGC R$ 250k por conglomerado.",
   },
   {
+    slug: "previdencia",
+    productClass: "fundos",
+    title: "Previdencia Privada (PGBL & VGBL)",
+    shortTitle: "Previdencia",
+    subtitle: "Beneficio Fiscal PGBL (12% Renda Bruta) e Tabela Regressiva Definitiva 10%",
+    defaultProductName: "Previdencia VGBL Soberano Regressivo",
+    defaultInvestedCents: 12000000n,
+    defaultAnnualRateBps: 1280,
+    defaultHoldingDays: 1825,
+    defaultFeeBps: 90,
+    systemDesignFocus:
+      "Otimizacao tributaria PGBL vs VGBL, aliquota regressiva ate 10% apos 10 anos, ausencia de come-cotas e portabilidade sem IR.",
+  },
+  {
+    slug: "bolsa-br",
+    productClass: "bolsa",
+    title: "Bolsa de Valores B3 (Acoes & FIIs)",
+    shortTitle: "Bolsa B3",
+    subtitle: "Acoes ON/PN, Units e Fundos Imobiliarios na B3",
+    defaultProductName: "Carteira Acoes B3 Swing Trade (WEGE3 / ITUB4)",
+    defaultInvestedCents: 8000000n,
+    defaultAnnualRateBps: 1650,
+    defaultHoldingDays: 730,
+    defaultFeeBps: 3,
+    systemDesignFocus:
+      "Limite de isencao mensal de R$ 20.000 em alienacoes Swing Trade (15%) vs Day Trade (20%), emolumentos B3 e IRRF dedo-duro.",
+  },
+  {
+    slug: "bolsa-global",
+    productClass: "bolsa",
+    title: "Global Equities (NYSE / NASDAQ & BDRs)",
+    shortTitle: "Bolsa Global",
+    subtitle: "Stocks Americanas, ADRs e BDRs Patrocinados",
+    defaultProductName: "Portfolio Tech US (NVDA / MSFT) via Avenue/IBKR",
+    defaultInvestedCents: 9500000n,
+    defaultAnnualRateBps: 1850,
+    defaultHoldingDays: 1095,
+    defaultFeeBps: 15,
+    systemDesignFocus:
+      "Tributacao anual unificada de 15% sobre ganho de capital offshore (Lei 14.754), retencao de 30% sobre dividendos nos EUA e spread cambial.",
+  },
+  {
+    slug: "ofertas-publicas",
+    productClass: "bolsa",
+    title: "Ofertas Publicas (IPOs & Follow-ons CVM 160)",
+    shortTitle: "IPOs & Follow-on",
+    subtitle: "Emissoes Primarias, Secundarias e Bookbuilding Institucional",
+    defaultProductName: "Alocacao Institucional IPO / Follow-on B3",
+    defaultInvestedCents: 5000000n,
+    defaultAnnualRateBps: 1420,
+    defaultHoldingDays: 365,
+    defaultFeeBps: 50,
+    systemDesignFocus:
+      "Assimetria de informacao no prospecto preliminar, periodo de lock-up contratual, rateio institucional vs varejo e tributacao de ganho de capital.",
+  },
+  {
     slug: "fundos",
     productClass: "fundos",
     title: "Fundos de Investimentos (CVM 175)",
-    shortTitle: "Fundos",
+    shortTitle: "Fundos CVM",
     subtitle: "Renda Fixa, Multimercados, Acoes e Fundos Imobiliarios",
     defaultProductName: "Fundo Multimercado Macro 2.0% + 20% Perf",
     defaultInvestedCents: 10000000n,
@@ -55,18 +125,18 @@ export const PRODUCT_CATEGORIES_CATALOG: ProductCategoryMeta[] = [
       "Erosao composta do come-cotas semestral (Maio/Novembro), taxa de administracao + performance e ausencia de FGC.",
   },
   {
-    slug: "bolsa",
-    productClass: "bolsa",
-    title: "Bolsa de Valores (Nacional B3 & Internacional)",
-    shortTitle: "Bolsa (B3 & Global)",
-    subtitle: "Acoes ON/PN, BDRs e Stocks NYSE/NASDAQ",
-    defaultProductName: "Carteira Acoes B3 Swing Trade (WEGE3 / ITUB4)",
-    defaultInvestedCents: 8000000n,
-    defaultAnnualRateBps: 1650,
+    slug: "etfs",
+    productClass: "etfs",
+    title: "ETFs — Exchange-Traded Funds",
+    shortTitle: "ETFs",
+    subtitle: "ETFs de Indice Acoes (BOVA11, IVVB11) e Renda Fixa",
+    defaultProductName: "IVVB11 iShares S&P 500 ETF",
+    defaultInvestedCents: 10000000n,
+    defaultAnnualRateBps: 1520,
     defaultHoldingDays: 730,
-    defaultFeeBps: 3,
+    defaultFeeBps: 23,
     systemDesignFocus:
-      "Limite de isencao mensal de R$ 20.000 em alienacoes Swing Trade (15%) vs Day Trade (20%), emolumentos B3 e IRRF dedo-duro.",
+      "Vantagem estrutural da ausencia de come-cotas vs ausencia de isencao mensal de R$ 20.000 e analise de tracking error.",
   },
   {
     slug: "coe",
@@ -97,18 +167,18 @@ export const PRODUCT_CATEGORIES_CATALOG: ProductCategoryMeta[] = [
       "Isencao mensal ate R$ 35.000 em alienacoes nacionais, tabela progressiva de ganho de capital (15% a 22,5%) e risco de custodia.",
   },
   {
-    slug: "tesouro-direto",
-    productClass: "tesouro_direto",
-    title: "Tesouro Direto — Titulos Publicos Federais",
-    shortTitle: "Tesouro Direto",
-    subtitle: "Tesouro Selic, Tesouro IPCA+, Prefixado e Renda+",
-    defaultProductName: "Tesouro IPCA+ 2035 Soberano",
-    defaultInvestedCents: 12000000n,
-    defaultAnnualRateBps: 1125,
-    defaultHoldingDays: 1095,
-    defaultFeeBps: 20,
+    slug: "ouro",
+    productClass: "etfs",
+    title: "Ouro Spot & Metais Preciosos (OZ1D / GOLD11 / IAU)",
+    shortTitle: "Ouro (Gold)",
+    subtitle: "Contratos Spot B3, ETFs Lastreados em Ouro Fisico e Hedge Inflacionario",
+    defaultProductName: "GOLD11 / Spot Ouro B3 Hedge Soberano",
+    defaultInvestedCents: 4500000n,
+    defaultAnnualRateBps: 1500,
+    defaultHoldingDays: 730,
+    defaultFeeBps: 30,
     systemDesignFocus:
-      "Risco soberano livre de default domestico, taxa de custodia B3 (0,20% a.a. com isencao ate R$ 10k no Selic) e sensibilidade de Marcacao a Mercado.",
+      "Descorrelacao estrutural em crises geopoliticas, tributacao de 15% sobre ganho de capital sem come-cotas e custo de custodia.",
   },
   {
     slug: "cambio",
@@ -124,26 +194,13 @@ export const PRODUCT_CATEGORIES_CATALOG: ProductCategoryMeta[] = [
     systemDesignFocus:
       "Decomposicao do Valor Efetivo Total (VET): Spread comercial sobre a PTAX do Banco Central + IOF cambial por modalidade.",
   },
-  {
-    slug: "etfs",
-    productClass: "etfs",
-    title: "ETFs — Exchange-Traded Funds",
-    shortTitle: "ETFs",
-    subtitle: "ETFs de Indice Acoes (BOVA11, IVVB11) e Renda Fixa",
-    defaultProductName: "IVVB11 iShares S&P 500 ETF",
-    defaultInvestedCents: 10000000n,
-    defaultAnnualRateBps: 1520,
-    defaultHoldingDays: 730,
-    defaultFeeBps: 23,
-    systemDesignFocus:
-      "Vantagem estrutural da ausencia de come-cotas vs ausencia de isencao mensal de R$ 20.000 e analise de tracking error.",
-  },
 ];
 
 export function getProductCategoryBySlug(
   slug: string,
 ): ProductCategoryMeta | undefined {
-  return PRODUCT_CATEGORIES_CATALOG.find((c) => c.slug === slug);
+  const normalizedSlug = slug === "bolsa" ? "bolsa-br" : slug;
+  return PRODUCT_CATEGORIES_CATALOG.find((c) => c.slug === normalizedSlug);
 }
 
 export function runCatalogProductAnalysis(

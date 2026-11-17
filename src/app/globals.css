@@ -43,24 +43,24 @@
   --ds-comp-calendar-future-bg: rgba(99, 102, 241, 0.10);
   --ds-comp-scorecard-border: rgba(99, 102, 241, 0.32);
 
-  /* Legacy compatibility tokens */
-  --background: #ffffff;
-  --foreground: #171717;
-  --card: #ffffff;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --destructive: #dc2626;
-  --success: #059669;
-  --border: #eef2ff;
-  --input: #eef2ff;
-  --ring: #6366f1;
+  /* Legacy compatibility tokens mapped directly to --ds-* */
+  --background: var(--ds-bg-primary);
+  --foreground: var(--ds-text-primary);
+  --card: var(--ds-surface-card);
+  --muted: var(--ds-surface-elevated);
+  --muted-foreground: var(--ds-text-secondary);
+  --destructive: var(--ds-market-negative);
+  --success: var(--ds-market-positive);
+  --border: var(--ds-border-subtle);
+  --input: var(--ds-border-subtle);
+  --ring: var(--ds-accent-quant);
   --chart-1: #eef2ff;
   --chart-2: #a5b4fc;
   --chart-3: #a5b4fc;
   --chart-4: #6366f1;
   --chart-5: #4338ca;
-  --investido: #a5b4fc;
-  --juros: #4338ca;
+  --investido: var(--ds-text-secondary);
+  --juros: var(--ds-accent-quant);
 }
 
 @theme inline {
@@ -89,30 +89,30 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --card: #18181b;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --destructive: #f87171;
-    --success: #34d399;
+    --background: var(--ds-bg-primary);
+    --foreground: var(--ds-text-primary);
+    --card: var(--ds-surface-card);
+    --muted: var(--ds-surface-elevated);
+    --muted-foreground: var(--ds-text-secondary);
+    --destructive: var(--ds-market-negative);
+    --success: var(--ds-market-positive);
   }
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #18181b;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --destructive: #f87171;
-  --success: #34d399;
+  --background: var(--ds-bg-primary);
+  --foreground: var(--ds-text-primary);
+  --card: var(--ds-surface-card);
+  --muted: var(--ds-surface-elevated);
+  --muted-foreground: var(--ds-text-secondary);
+  --destructive: var(--ds-market-negative);
+  --success: var(--ds-market-positive);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--ds-bg-primary);
+  color: var(--ds-text-primary);
+  font-family: var(--ds-font-sans), var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 .tabular-nums {

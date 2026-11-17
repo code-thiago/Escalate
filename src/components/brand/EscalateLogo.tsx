@@ -44,15 +44,15 @@ export default function EscalateLogo({
     <div className={`inline-flex items-center ${currentSize.gap} group select-none ${className}`}>
       {/* Container do Isotipo */}
       <div
-        className={`${currentSize.icon} bg-indigo-600 flex items-center justify-center shadow-xs group-hover:bg-indigo-700 transition-colors`}
+        className={`${currentSize.icon} bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] flex items-center justify-center group-hover:border-[var(--ds-accent-quant)] transition-colors`}
       >
-        <EscalateSymbol className="w-full h-full fill-white" />
+        <EscalateSymbol className="w-full h-full fill-[var(--ds-accent-quant)]" />
       </div>
 
       {/* Tipografia Oficial da Marca */}
       {showText && variant !== "symbol" && (
         <span
-          className={`${currentSize.text} font-black tracking-wider text-foreground uppercase`}
+          className={`${currentSize.text} font-black tracking-wider text-[var(--ds-text-primary)] uppercase`}
         >
           Escalate
         </span>

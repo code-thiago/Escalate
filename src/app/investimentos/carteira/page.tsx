@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { PlatformShell } from "@/src/components/shell/PlatformShell";
 import { computeFullPortfolioDashboardState } from "@/src/core/finance/demo-portfolio";
 import { formatBpsPercent, formatCentsBRL } from "@/src/lib/formatters";
@@ -14,6 +15,36 @@ const LIQUIDITY_LABELS: Record<LiquidityTier, string> = {
   D_PLUS_30: "D+30+ (Ciclo Longo)",
   AT_MATURITY: "No Vencimento (Travado)",
 };
+
+const VALID_CLASSES: ReadonlySet<ProductClass> = new Set<ProductClass>([
+  "renda_fixa",
+  "fundos",
+  "bolsa",
+  "coe",
+  "cripto",
+  "tesouro_direto",
+  "cambio",
+  "etfs",
+]);
+
+function ClasseQuerySync({
+  onSelectClass,
+}: {
+  onSelectClass: (cls: ProductClass | "ALL") => void;
+}) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const param = searchParams?.get("classe");
+    if (param && VALID_CLASSES.has(param as ProductClass)) {
+      onSelectClass(param as ProductClass);
+    } else if (param === "ALL") {
+      onSelectClass("ALL");
+    }
+  }, [searchParams, onSelectClass]);
+
+  return null;
+}
 
 export default function MinhaCarteiraPage() {
   const [selectedClass, setSelectedClass] = useState<ProductClass | "ALL">("ALL");
@@ -39,29 +70,33 @@ export default function MinhaCarteiraPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/investimentos"
-            className="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors"
           >
             Calendario Bifasico
           </Link>
           <Link
             href="/investimentos/objetivos"
-            className="px-3 py-1.5 rounded text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity"
           >
-            Objetivos & Metas
+            Objetivos &amp; Metas
           </Link>
         </div>
       }
     >
+      <Suspense fallback={null}>
+        <ClasseQuerySync onSelectClass={setSelectedClass} />
+      </Suspense>
+
       {/* Section 1: Asset Classes & 5-Tier Liquidity Ladder */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Breakdown by Asset Class (Hare-Niemeyer 10000 bps) */}
-        <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--ds-border-subtle)] pb-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-100">
+              <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
                 1. Distribuicao por Classe de Ativo
-              </h3>
-              <p className="text-xs text-slate-400">
+              </h2>
+              <p className="text-xs text-[var(--ds-text-secondary)] tabular-financial">
                 Invariante Hare-Niemeyer: Soma Exata = {totalBpsCheck} bps (
                 {formatBpsPercent(totalBpsCheck)})
               </p>
@@ -69,7 +104,7 @@ export default function MinhaCarteiraPage() {
             <button
               type="button"
               onClick={() => setSelectedClass("ALL")}
-              className="text-xs font-mono text-indigo-400 hover:underline"
+              className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-accent-quant)] hover:underline cursor-pointer"
             >
               Limpar Filtro
             </button>
@@ -89,28 +124,28 @@ export default function MinhaCarteiraPage() {
                         isSelected ? "ALL" : (cls as ProductClass),
                       )
                     }
-                    className={`w-full text-left rounded p-3 border transition-colors ${
+                    className={`w-full text-left rounded-lg p-3 border transition-colors cursor-pointer ${
                       isSelected
-                        ? "bg-indigo-950/40 border-indigo-500"
-                        : "bg-slate-900/70 border-slate-800 hover:border-slate-700"
+                        ? "bg-[var(--ds-surface-elevated)] border-[var(--ds-accent-quant)]"
+                        : "bg-[var(--ds-bg-primary)] border-[var(--ds-border-subtle)] hover:border-[var(--ds-accent-quant)]"
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono uppercase font-semibold text-slate-200">
+                      <span className="font-[family-name:var(--ds-font-mono)] uppercase font-semibold text-[var(--ds-text-primary)]">
                         {cls.replace("_", " ")}
                       </span>
-                      <div className="flex items-center gap-4 font-mono tabular-nums">
-                        <span className="text-slate-300">
+                      <div className="flex items-center gap-4 tabular-financial">
+                        <span className="text-[var(--ds-text-secondary)]">
                           {formatCentsBRL(alloc.totalCents)}
                         </span>
-                        <span className="text-indigo-400 font-bold w-16 text-right">
+                        <span className="text-[var(--ds-accent-quant)] font-bold w-16 text-right">
                           {formatBpsPercent(alloc.shareBps)}
                         </span>
                       </div>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                    <div className="w-full h-1.5 bg-[var(--ds-surface-elevated)] rounded-full mt-2 overflow-hidden">
                       <div
-                        className="h-full bg-indigo-500"
+                        className="h-full bg-[var(--ds-accent-quant)]"
                         style={{ width: `${alloc.shareBps / 100}%` }}
                       />
                     </div>
@@ -122,12 +157,12 @@ export default function MinhaCarteiraPage() {
         </section>
 
         {/* 5-Tier Liquidity Ladder */}
-        <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-semibold text-slate-100">
+        <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+          <div className="border-b border-[var(--ds-border-subtle)] pb-3">
+            <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
               2. Liquidez dos Ativos (Escada em 5 Niveis)
-            </h3>
-            <p className="text-xs text-slate-400">
+            </h2>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
               Mapeamento de disponibilidade de caixa do D+0 ate o vencimento contratual
             </p>
           </div>
@@ -146,24 +181,24 @@ export default function MinhaCarteiraPage() {
               return (
                 <div
                   key={tier}
-                  className="bg-slate-900/70 border border-slate-800 rounded p-3 space-y-1.5"
+                  className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-1.5"
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-slate-200">
+                    <span className="font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)]">
                       {LIQUIDITY_LABELS[tier]}
                     </span>
-                    <div className="flex items-center gap-3 font-mono tabular-nums">
-                      <span className="text-emerald-400 font-semibold">
+                    <div className="flex items-center gap-3 tabular-financial">
+                      <span className="text-[var(--ds-market-positive)] font-semibold">
                         {formatCentsBRL(bucketCents)}
                       </span>
-                      <span className="text-slate-400 w-14 text-right">
+                      <span className="text-[var(--ds-text-secondary)] w-14 text-right">
                         {formatBpsPercent(shareBps)}
                       </span>
                     </div>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[var(--ds-surface-elevated)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-500"
+                      className="h-full bg-[var(--ds-market-positive)]"
                       style={{ width: `${Math.min(100, shareBps / 100)}%` }}
                     />
                   </div>
@@ -175,14 +210,19 @@ export default function MinhaCarteiraPage() {
       </div>
 
       {/* Section 2: Individual Products & Net Profitability Table */}
-      <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-3">
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[var(--ds-border-subtle)] pb-3">
           <div>
-            <h3 className="text-sm font-semibold text-slate-100">
-              3. Produtos Individuais & Rentabilidade Liquida ({filteredPositions.length}{" "}
+            <h2 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
+              3. Produtos Individuais &amp; Rentabilidade Liquida ({filteredPositions.length}{" "}
               Ativos)
-            </h3>
-            <p className="text-xs text-slate-400">
+              {selectedClass !== "ALL" && (
+                <span className="ml-2 text-xs text-[var(--ds-accent-quant)] uppercase">
+                  [Filtro: {selectedClass.replace("_", " ")}]
+                </span>
+              )}
+            </h2>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
               Rentabilidade individual descontada de IR regressivo/custodia, indexador contratual e status de cobertura FGC.
             </p>
           </div>
@@ -191,10 +231,10 @@ export default function MinhaCarteiraPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-mono">
+              <tr className="border-b border-[var(--ds-border-subtle)] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-mono)]">
                 <th className="py-2.5 pr-4">Codigo / Produto</th>
                 <th className="py-2.5 pr-4">Classe</th>
-                <th className="py-2.5 pr-4">Indexador & Taxa</th>
+                <th className="py-2.5 pr-4">Indexador &amp; Taxa</th>
                 <th className="py-2.5 pr-4">Liquidez</th>
                 <th className="py-2.5 pr-4 text-right">Valor Investido</th>
                 <th className="py-2.5 pr-4 text-right">Saldo Liquido</th>
@@ -202,7 +242,7 @@ export default function MinhaCarteiraPage() {
                 <th className="py-2.5 text-center">FGC</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/70 font-mono tabular-nums">
+            <tbody className="divide-y divide-[var(--ds-border-subtle)] tabular-financial">
               {filteredPositions.map((pos) => {
                 const netGainCents = pos.currentNetCents - pos.investedCents;
                 const netGainBps =
@@ -213,42 +253,42 @@ export default function MinhaCarteiraPage() {
                 return (
                   <tr
                     key={pos.tickerOrCode}
-                    className="hover:bg-slate-900/50 transition-colors"
+                    className="hover:bg-[var(--ds-surface-elevated)] transition-colors"
                   >
                     <td className="py-3 pr-4">
-                      <div className="font-bold text-slate-100">
+                      <div className="font-bold text-[var(--ds-text-primary)]">
                         {pos.tickerOrCode}
                       </div>
-                      <div className="font-sans text-[11px] text-slate-400">
+                      <div className="font-[family-name:var(--ds-font-sans)] text-[11px] text-[var(--ds-text-secondary)]">
                         {pos.assetName}
                       </div>
                     </td>
-                    <td className="py-3 pr-4 uppercase text-indigo-300">
+                    <td className="py-3 pr-4 uppercase text-[var(--ds-accent-quant)]">
                       {pos.productClass.replace("_", " ")}
                     </td>
-                    <td className="py-3 pr-4 text-slate-300">
+                    <td className="py-3 pr-4 text-[var(--ds-text-secondary)] tabular-financial">
                       {pos.indexer} ({formatBpsPercent(pos.annualRateBps)} a.a.)
                     </td>
                     <td className="py-3 pr-4">
-                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px]">
+                      <span className="px-2 py-0.5 rounded bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] text-[var(--ds-text-secondary)] text-[11px] tabular-financial">
                         {pos.liquidityTier}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-right text-slate-300">
+                    <td className="py-3 pr-4 text-right text-[var(--ds-text-secondary)] tabular-financial">
                       {formatCentsBRL(pos.investedCents)}
                     </td>
-                    <td className="py-3 pr-4 text-right font-semibold text-slate-100">
+                    <td className="py-3 pr-4 text-right font-semibold text-[var(--ds-text-primary)] tabular-financial">
                       {formatCentsBRL(pos.currentNetCents)}
                     </td>
-                    <td className="py-3 pr-4 text-right text-emerald-400 font-semibold">
+                    <td className="py-3 pr-4 text-right text-[var(--ds-market-positive)] font-semibold tabular-financial">
                       +{formatBpsPercent(netGainBps)}
                     </td>
                     <td className="py-3 text-center">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold tabular-financial ${
                           pos.fgcCovered
-                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-                            : "bg-slate-800 text-slate-400"
+                            ? "bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30"
+                            : "bg-[var(--ds-surface-elevated)] text-[var(--ds-text-secondary)] border border-[var(--ds-border-subtle)]"
                         }`}
                       >
                         {pos.fgcCovered ? "SIM" : "NAO"}

@@ -1,10 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { PlatformShell } from "@/src/components/shell/PlatformShell";
 import { INITIAL_CONNECTED_ACCOUNTS } from "@/src/core/finance/demo-portfolio";
 import { formatCentsBRL } from "@/src/lib/formatters";
+
+function VaultTabSync({ onVaultMode }: { onVaultMode: (active: boolean) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    onVaultMode(searchParams?.get("tab") === "vault");
+  }, [searchParams, onVaultMode]);
+  return null;
+}
 
 export default function ConexoesPage() {
   const [syncResult, setSyncResult] = useState<{
@@ -13,6 +22,7 @@ export default function ConexoesPage() {
     message: string;
   } | null>(null);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [isVaultHighlighted, setIsVaultHighlighted] = useState(false);
 
   async function handleTriggerSync(
     providerType: "OPEN_FINANCE_SANDBOX" | "B3_CSV" | "MANUAL",
@@ -72,43 +82,58 @@ export default function ConexoesPage() {
       actions={
         <Link
           href="/investimentos"
-          className="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors"
         >
           Voltar ao Dashboard
         </Link>
       }
     >
+      <Suspense fallback={null}>
+        <VaultTabSync onVaultMode={setIsVaultHighlighted} />
+      </Suspense>
+
+      {isVaultHighlighted && (
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-accent-quant)] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-accent-quant)]">
+            [AES-256-GCM API VAULT ACTIVE]: Credenciais e tokens read-only cifrados com chave mestre isolada e rotacao automatica.
+          </div>
+          <span className="text-[11px] tabular-financial px-2 py-0.5 rounded bg-[var(--ds-market-positive)]/10 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30">
+            0-TOKEN PARSER
+          </span>
+        </div>
+      )}
+
       {/* Active Connected Institutions */}
-      <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-slate-100">
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
           Contas e Custodiantes Conectados ({INITIAL_CONNECTED_ACCOUNTS.length})
-        </h3>
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {INITIAL_CONNECTED_ACCOUNTS.map((acc) => (
             <div
               key={acc.id}
-              className="bg-slate-900/80 border border-slate-800 rounded-md p-4 flex flex-col justify-between gap-3"
+              className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-4 flex flex-col justify-between gap-3"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="font-[family-name:var(--ds-font-mono)] text-[10px] px-2 py-0.5 rounded bg-[var(--ds-accent-quant)]/15 text-[var(--ds-accent-quant)] border border-[var(--ds-accent-quant)]/30">
                     {acc.providerType}
                   </span>
-                  <h4 className="text-sm font-semibold text-slate-100 mt-1.5">
+                  <h3 className="text-sm font-semibold text-[var(--ds-text-primary)] mt-1.5">
                     {acc.institutionName}
-                  </h4>
+                  </h3>
                 </div>
-                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="font-[family-name:var(--ds-font-mono)] text-[10px] px-2 py-0.5 rounded bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)] border border-[var(--ds-market-positive)]/30">
                   {acc.status}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs font-mono tabular-nums">
-                <span className="text-slate-400">
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--ds-border-subtle)] text-xs tabular-financial">
+                <span className="text-[var(--ds-text-secondary)]">
                   {acc.assetsCount} ativos sincronizados
                 </span>
-                <span className="text-slate-100 font-semibold">
+                <span className="text-[var(--ds-text-primary)] font-semibold">
                   {formatCentsBRL(acc.totalNetCents)}
                 </span>
               </div>
@@ -119,15 +144,15 @@ export default function ConexoesPage() {
 
       {/* 3 Connector Adapters Trigger Panel */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
-            <span className="font-mono text-[11px] text-indigo-400 uppercase">
+            <span className="font-[family-name:var(--ds-font-mono)] text-[11px] text-[var(--ds-accent-quant)] uppercase">
               Adapter 01 — API Read-Only
             </span>
-            <h4 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
               Open Finance Brasil Sandbox
-            </h4>
-            <p className="text-xs text-slate-400">
+            </h3>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
               Sincroniza CDBs, LCIs, Fundos e Tesouro Direto de instituicoes participantes com tokens protegidos via AES-256-GCM.
             </p>
           </div>
@@ -140,7 +165,7 @@ export default function ConexoesPage() {
                 "BTG Pactual Open Finance",
               )
             }
-            className="w-full py-2 px-3 rounded text-xs font-mono font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full py-2 px-3 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
           >
             {loadingProvider === "OPEN_FINANCE_SANDBOX"
               ? "Sincronizando..."
@@ -148,15 +173,15 @@ export default function ConexoesPage() {
           </button>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
-            <span className="font-mono text-[11px] text-emerald-400 uppercase">
+            <span className="font-[family-name:var(--ds-font-mono)] text-[11px] text-[var(--ds-market-positive)] uppercase">
               Adapter 02 — Parser CEI/B3
             </span>
-            <h4 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
               Importador B3 Area do Investidor (CSV)
-            </h4>
-            <p className="text-xs text-slate-400">
+            </h3>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
               Processa arquivos CSV exportados da B3 convertendo valores em Reais para centavos inteiros sem perda de ponto flutuante.
             </p>
           </div>
@@ -164,7 +189,7 @@ export default function ConexoesPage() {
             type="button"
             disabled={loadingProvider !== null}
             onClick={() => handleTriggerSync("B3_CSV", "B3 Custodia Consolidada")}
-            className="w-full py-2 px-3 rounded text-xs font-mono font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full py-2 px-3 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-market-positive)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
           >
             {loadingProvider === "B3_CSV"
               ? "Processando CSV..."
@@ -172,15 +197,15 @@ export default function ConexoesPage() {
           </button>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 flex flex-col justify-between space-y-4">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-2">
-            <span className="font-mono text-[11px] text-cyan-400 uppercase">
+            <span className="font-[family-name:var(--ds-font-mono)] text-[11px] text-[var(--ds-accent-quant)] uppercase">
               Adapter 03 — Entrada Assistida
             </span>
-            <h4 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
               Custodia Direta / Cold Wallet Manual
-            </h4>
-            <p className="text-xs text-slate-400">
+            </h3>
+            <p className="text-xs text-[var(--ds-text-secondary)]">
               Adiciona ativos internacionais, criptoativos em hardware wallet ou emissoes privadas com validacao estrita Zod.
             </p>
           </div>
@@ -190,7 +215,7 @@ export default function ConexoesPage() {
             onClick={() =>
               handleTriggerSync("MANUAL", "Custodia Manual Assistida")
             }
-            className="w-full py-2 px-3 rounded text-xs font-mono font-semibold bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full py-2 px-3 rounded-lg text-xs font-[family-name:var(--ds-font-mono)] font-semibold bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors cursor-pointer disabled:opacity-50"
           >
             {loadingProvider === "MANUAL"
               ? "Validando..."
@@ -200,7 +225,7 @@ export default function ConexoesPage() {
       </section>
 
       {syncResult && (
-        <div className="bg-indigo-950/40 border border-indigo-500/60 rounded-lg p-4 font-mono text-xs text-indigo-200">
+        <div className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-accent-quant)] rounded-xl p-4 font-[family-name:var(--ds-font-mono)] text-xs text-[var(--ds-text-primary)] tabular-financial">
           [STATUS SINCRONIZACAO]: {syncResult.message}
         </div>
       )}

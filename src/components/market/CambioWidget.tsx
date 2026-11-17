@@ -32,51 +32,52 @@ export default function CambioWidget() {
       const cotacaoErr = err as { tipo: string };
       switch (cotacaoErr.tipo) {
         case "SIMBOLO_INVALIDO":
-          return "Par de moedas não reconhecido.";
+          return "Par de moedas nao reconhecido.";
         case "RATE_LIMIT":
-          return "Limite de requisições atingido. Tente em instantes.";
+          return "Limite de requisicoes atingido. Tente em instantes.";
         case "ERRO_REDE":
-          return "Falha de conexão com a API de câmbio.";
+          return "Falha de conexao com a API de cambio.";
         default:
-          return "Erro ao buscar cotação de câmbio.";
+          return "Erro ao buscar cotacao de cambio.";
       }
     }
-    return "Falha na comunicação com o provedor Alpha Vantage.";
+    return "Falha na comunicacao com o provedor Alpha Vantage.";
   };
 
   return (
-    <div className="bg-[#0f172a] border border-slate-800 rounded-xl p-5 space-y-4 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-800/80">
+    <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-[var(--ds-border-subtle)]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400" />
-            <h3 className="text-sm font-bold text-slate-100 uppercase tracking-wider font-mono">
-              Cotações de Câmbio & Remessas Internacionais
+            <span className="w-2 h-2 rounded-full bg-[var(--ds-accent-quant)]" />
+            <h3 className="text-sm font-bold text-[var(--ds-text-primary)] uppercase tracking-wider font-[family-name:var(--ds-font-mono)]">
+              Cotacoes de Cambio &amp; Remessas Internacionais
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Dados fornecidos via Alpha Vantage FX com cache distribuído Upstash Redis
+          <p className="text-xs text-[var(--ds-text-secondary)] mt-0.5">
+            Dados fornecidos via Alpha Vantage FX com cache distribuido Upstash Redis
           </p>
         </div>
 
-        {/* Pair Switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900 rounded-lg border border-slate-800">
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--ds-bg-primary)] rounded-lg border border-[var(--ds-border-subtle)]">
           <button
+            type="button"
             onClick={() => setSelectedPair("USD-BRL")}
-            className={`px-3 py-1.5 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-[family-name:var(--ds-font-mono)] font-bold rounded transition-colors cursor-pointer ${
               selectedPair === "USD-BRL"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
             }`}
           >
             USD / BRL
           </button>
           <button
+            type="button"
             onClick={() => setSelectedPair("EUR-BRL")}
-            className={`px-3 py-1.5 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-[family-name:var(--ds-font-mono)] font-bold rounded transition-colors cursor-pointer ${
               selectedPair === "EUR-BRL"
-                ? "bg-indigo-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)]"
+                : "text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)]"
             }`}
           >
             EUR / BRL
@@ -84,36 +85,37 @@ export default function CambioWidget() {
         </div>
       </div>
 
-      {/* Result Display */}
       {isLoading ? (
-        <div className="h-20 bg-slate-900/60 rounded-lg animate-pulse border border-slate-800/60" />
+        <div className="h-20 bg-[var(--ds-bg-primary)] rounded-lg animate-pulse border border-[var(--ds-border-subtle)]" />
       ) : error ? (
-        <div className="p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium">
+        <div className="p-3.5 rounded-lg bg-[var(--ds-market-negative)]/10 border border-[var(--ds-market-negative)]/30 text-[var(--ds-market-negative)] text-xs font-medium">
           {getMensagemErro(error)}
         </div>
       ) : cambioRes?.dados ? (
-        <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-base font-bold text-slate-100">
-                {selectedPair === "USD-BRL" ? "Dólar Comercial" : "Euro Comercial"}
+              <span className="font-[family-name:var(--ds-font-mono)] text-base font-bold text-[var(--ds-text-primary)]">
+                {selectedPair === "USD-BRL" ? "Dolar Comercial" : "Euro Comercial"}
               </span>
-              <span className="font-mono text-xs text-slate-400">
+              <span className="font-[family-name:var(--ds-font-mono)] text-xs text-[var(--ds-text-secondary)]">
                 ({selectedPair})
               </span>
             </div>
-            <div className="text-[11px] font-mono text-slate-500 mt-1 flex items-center gap-2">
+            <div className="text-[11px] tabular-financial text-[var(--ds-text-secondary)] mt-1 flex items-center gap-2">
               <span>Sincronizado: {formatarHora(cambioRes.atualizadoEm)}</span>
-              {isFetching && <span className="animate-pulse text-indigo-400">• atualizando</span>}
+              {isFetching && (
+                <span className="animate-pulse text-[var(--ds-accent-quant)]">• atualizando</span>
+              )}
             </div>
           </div>
 
           <div className="text-right">
-            <div className="font-mono text-2xl font-extrabold text-slate-100 tabular-nums">
+            <div className="text-2xl font-extrabold text-[var(--ds-text-primary)] tabular-financial">
               {formatarReal(cambioRes.dados.taxa)}
             </div>
-            <div className="text-[11px] font-mono text-slate-400 tabular-nums mt-0.5">
-              Paridade cambial à vista
+            <div className="text-[11px] font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] mt-0.5">
+              Paridade cambial a vista
             </div>
           </div>
         </div>

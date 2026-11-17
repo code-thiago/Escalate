@@ -34,19 +34,19 @@ export default function InvestimentosCalendarDashboardPage() {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/investimentos/carteira"
-            className="px-3 py-1.5 rounded text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] hover:opacity-90 transition-opacity"
           >
             Minha Carteira
           </Link>
           <Link
             href="/investimentos/objetivos"
-            className="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors"
           >
             Objetivos (Bps)
           </Link>
           <Link
             href="/investimentos/conexoes"
-            className="px-3 py-1.5 rounded text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--ds-surface-elevated)] hover:border-[var(--ds-accent-quant)] text-[var(--ds-text-primary)] border border-[var(--ds-border-subtle)] transition-colors tabular-financial"
           >
             Conectar Contas ({dashboard.accounts.length})
           </Link>
@@ -58,56 +58,56 @@ export default function InvestimentosCalendarDashboardPage() {
         aria-label="Indicadores Consolidados do Patrimonio"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-4">
-          <span className="text-xs font-mono uppercase text-slate-400">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4">
+          <span className="text-[11px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-text-secondary)]">
             Patrimonio Liquido Consolidado
           </span>
-          <div className="text-2xl font-bold text-slate-100 mt-1 tabular-nums">
+          <div className="text-xl xl:text-2xl font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
             {formatCentsBRL(dashboard.consolidation.totalNetCents)}
           </div>
-          <div className="text-xs text-emerald-400 mt-1 font-mono tabular-nums">
+          <div className="text-xs text-[var(--ds-market-positive)] mt-1 tabular-financial">
             Bruto: {formatCentsBRL(dashboard.consolidation.totalGrossCents)}
           </div>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-4">
-          <span className="text-xs font-mono uppercase text-slate-400">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4">
+          <span className="text-[11px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-text-secondary)]">
             Lucro Liquido Acumulado
           </span>
-          <div className="text-2xl font-bold text-emerald-400 mt-1 tabular-nums">
+          <div className="text-xl xl:text-2xl font-bold text-[var(--ds-market-positive)] mt-1 tabular-financial">
             +{formatCentsBRL(totalGainCents)}
           </div>
-          <div className="text-xs text-slate-400 mt-1 font-mono tabular-nums">
+          <div className="text-xs text-[var(--ds-text-secondary)] mt-1 tabular-financial">
             Realizado no Calendario:{" "}
             {formatCentsBRL(dashboard.calendarSummary.totalRealizedYieldCents)}
           </div>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-4">
-          <span className="text-xs font-mono uppercase text-slate-400">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4">
+          <span className="text-[11px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-text-secondary)] tabular-financial">
             Previsao de Renda Futura (P50 - {horizonMonths}m)
           </span>
-          <div className="text-2xl font-bold text-indigo-400 mt-1 tabular-nums">
+          <div className="text-xl xl:text-2xl font-bold text-[var(--ds-accent-quant)] mt-1 tabular-financial">
             +{formatCentsBRL(dashboard.calendarSummary.totalProjectedP50YieldCents)}
           </div>
-          <div className="text-xs text-slate-400 mt-1 font-mono tabular-nums">
+          <div className="text-xs text-[var(--ds-text-secondary)] mt-1 tabular-financial">
             Vencimentos Programados:{" "}
             {formatCentsBRL(dashboard.calendarSummary.totalMaturitiesCents)}
           </div>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-4">
-          <span className="text-xs font-mono uppercase text-slate-400">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4">
+          <span className="text-[11px] font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-text-secondary)] tabular-financial">
             Cobertura FGC (Teto R$ 250k / R$ 1M)
           </span>
-          <div className="text-2xl font-bold text-slate-100 mt-1 tabular-nums">
+          <div className="text-xl xl:text-2xl font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
             {formatCentsBRL(dashboard.fgcAnalysis.coveredCents)}
           </div>
           <div
-            className={`text-xs mt-1 font-mono tabular-nums ${
+            className={`text-xs mt-1 tabular-financial ${
               dashboard.fgcAnalysis.uncoveredCents > 0n
-                ? "text-amber-400"
-                : "text-emerald-400"
+                ? "text-[var(--ds-market-warning)]"
+                : "text-[var(--ds-market-positive)]"
             }`}
           >
             Descoberto Elegivel:{" "}
@@ -117,13 +117,13 @@ export default function InvestimentosCalendarDashboardPage() {
       </section>
 
       {/* Biphasic Calendar Controls & Grid */}
-      <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-4">
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-[var(--ds-border-subtle)] pb-4">
           <div>
-            <h3 className="text-base font-semibold text-slate-100">
+            <h2 className="text-base font-semibold text-[var(--ds-text-primary)]">
               Calendario Financeiro Bifasico (Passado Realizado vs. Futuro Projetado)
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            </h2>
+            <p className="text-xs text-[var(--ds-text-secondary)] mt-0.5">
               Clique em qualquer mes para inspecionar os eventos contabeis realizados ou as bandas de rentabilidade futura P10, P50 e P90.
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function InvestimentosCalendarDashboardPage() {
           <div className="flex items-center gap-3">
             <label
               htmlFor="horizon-select"
-              className="text-xs font-mono text-slate-300"
+              className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)]"
             >
               Horizonte Futuro:
             </label>
@@ -139,7 +139,7 @@ export default function InvestimentosCalendarDashboardPage() {
               id="horizon-select"
               value={horizonMonths}
               onChange={(e) => setHorizonMonths(Number(e.target.value))}
-              className="bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-1.5 text-xs tabular-financial text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
             >
               <option value={3}>+3 Meses</option>
               <option value={6}>+6 Meses</option>
@@ -150,17 +150,17 @@ export default function InvestimentosCalendarDashboardPage() {
         </div>
 
         {/* Biphasic Legend */}
-        <div className="flex flex-wrap items-center gap-6 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-6 text-xs font-[family-name:var(--ds-font-mono)]">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-xs bg-emerald-500/20 border border-emerald-500/60 inline-block" />
-            <span className="text-slate-300">
+            <span className="w-3 h-3 rounded-xs bg-[var(--ds-market-positive)]/20 border border-[var(--ds-market-positive)]/60 inline-block" />
+            <span className="text-[var(--ds-text-secondary)]">
               FASE 1: REALIZADO (Contabil / Proventos / Accrual)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-xs bg-indigo-500/20 border border-indigo-500/60 inline-block" />
-            <span className="text-slate-300">
-              FASE 2: PROJETADO (Estocastico P10 / P50 / P90 & Vencimentos)
+            <span className="w-3 h-3 rounded-xs bg-[var(--ds-accent-quant)]/20 border border-[var(--ds-accent-quant)]/60 inline-block" />
+            <span className="text-[var(--ds-text-secondary)]">
+              FASE 2: PROJETADO (Estocastico P10 / P50 / P90 &amp; Vencimentos)
             </span>
           </div>
         </div>
@@ -176,23 +176,23 @@ export default function InvestimentosCalendarDashboardPage() {
                 key={month.yearMonth}
                 type="button"
                 onClick={() => setSelectedMonthYM(month.yearMonth)}
-                className={`text-left rounded-md p-3.5 border transition-all ${
+                className={`text-left rounded-lg p-3.5 border transition-colors cursor-pointer ${
                   isSelected
-                    ? "ring-2 ring-indigo-500 bg-slate-900 border-indigo-400"
+                    ? "bg-[var(--ds-surface-elevated)] border-[var(--ds-accent-quant)] ring-1 ring-[var(--ds-accent-quant)]"
                     : isRealized
-                      ? "bg-emerald-950/15 border-emerald-800/40 hover:border-emerald-600/60"
-                      : "bg-indigo-950/15 border-indigo-800/40 hover:border-indigo-600/60"
+                      ? "bg-[var(--ds-bg-primary)] border-[var(--ds-market-positive)]/30 hover:border-[var(--ds-market-positive)]"
+                      : "bg-[var(--ds-bg-primary)] border-[var(--ds-border-subtle)] hover:border-[var(--ds-accent-quant)]"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-slate-100 tabular-nums">
+                  <span className="text-xs font-bold text-[var(--ds-text-primary)] tabular-financial">
                     {month.yearMonth}
                   </span>
                   <span
-                    className={`font-mono text-[10px] px-1.5 py-0.5 rounded uppercase ${
+                    className={`font-[family-name:var(--ds-font-mono)] text-[10px] px-1.5 py-0.5 rounded uppercase ${
                       isRealized
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : "bg-indigo-500/20 text-indigo-300"
+                        ? "bg-[var(--ds-market-positive)]/15 text-[var(--ds-market-positive)]"
+                        : "bg-[var(--ds-accent-quant)]/15 text-[var(--ds-accent-quant)]"
                     }`}
                   >
                     {isRealized ? "REALIZADO" : "PROJETADO"}
@@ -200,29 +200,31 @@ export default function InvestimentosCalendarDashboardPage() {
                 </div>
 
                 <div className="mt-3">
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-[var(--ds-text-secondary)]">
                     {isRealized ? "Rendimento Realizado" : "Rendimento Esperado (P50)"}
                   </div>
                   <div
-                    className={`text-sm font-semibold font-mono tabular-nums mt-0.5 ${
-                      isRealized ? "text-emerald-400" : "text-indigo-300"
+                    className={`text-sm font-semibold tabular-financial mt-0.5 ${
+                      isRealized
+                        ? "text-[var(--ds-market-positive)]"
+                        : "text-[var(--ds-accent-quant)]"
                     }`}
                   >
                     +{formatCentsBRL(month.totalYieldCents)}
                   </div>
-                  <div className="text-[11px] font-mono text-slate-400 tabular-nums">
+                  <div className="text-[11px] text-[var(--ds-text-secondary)] tabular-financial">
                     Taxa Mensal: {formatBpsPercent(month.yieldBps, true)}
                   </div>
                 </div>
 
                 {month.projectedPercentiles && (
-                  <div className="mt-2 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-400 space-y-0.5 tabular-nums">
+                  <div className="mt-2 pt-2 border-t border-[var(--ds-border-subtle)] text-[10px] text-[var(--ds-text-secondary)] space-y-0.5 tabular-financial">
                     <div>P10: {formatCentsBRL(month.projectedPercentiles.p10Cents)}</div>
                     <div>P90: {formatCentsBRL(month.projectedPercentiles.p90Cents)}</div>
                   </div>
                 )}
 
-                <div className="mt-2 text-[11px] font-mono text-slate-400">
+                <div className="mt-2 text-[11px] text-[var(--ds-text-secondary)] tabular-financial">
                   Eventos: {month.events.length}
                 </div>
               </button>
@@ -232,35 +234,35 @@ export default function InvestimentosCalendarDashboardPage() {
 
         {/* Selected Month Detail Drawer */}
         {selectedMonth && (
-          <div className="bg-slate-900/90 border border-slate-800 rounded-md p-4 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-800 pb-3">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-4 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[var(--ds-border-subtle)] pb-3">
               <div>
-                <h4 className="text-sm font-semibold text-slate-100 font-mono">
+                <h3 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
                   Detalhamento Mensal: {selectedMonth.yearMonth} (
                   {selectedMonth.phase === "realized"
                     ? "Fase Realizada"
                     : "Fase Projetada"}
                   )
-                </h4>
-                <p className="text-xs text-slate-400">
+                </h3>
+                <p className="text-xs text-[var(--ds-text-secondary)]">
                   Fluxo de Caixa Liquido do Mes:{" "}
-                  <span className="font-mono text-slate-200 tabular-nums">
+                  <span className="text-[var(--ds-text-primary)] tabular-financial">
                     {formatCentsBRL(selectedMonth.netCashflowCents ?? 0n)}
                   </span>
                 </p>
               </div>
 
               {selectedMonth.projectedPercentiles && (
-                <div className="flex items-center gap-4 text-xs font-mono tabular-nums">
-                  <span className="text-amber-300">
+                <div className="flex flex-wrap items-center gap-4 text-xs tabular-financial">
+                  <span className="text-[var(--ds-market-warning)]">
                     Pessimista (P10):{" "}
                     {formatCentsBRL(selectedMonth.projectedPercentiles.p10Cents)}
                   </span>
-                  <span className="text-indigo-300 font-semibold">
+                  <span className="text-[var(--ds-accent-quant)] font-semibold">
                     Base (P50):{" "}
                     {formatCentsBRL(selectedMonth.projectedPercentiles.p50Cents)}
                   </span>
-                  <span className="text-emerald-300">
+                  <span className="text-[var(--ds-market-positive)]">
                     Otimista (P90):{" "}
                     {formatCentsBRL(selectedMonth.projectedPercentiles.p90Cents)}
                   </span>
@@ -269,14 +271,14 @@ export default function InvestimentosCalendarDashboardPage() {
             </div>
 
             {selectedMonth.events.length === 0 ? (
-              <p className="text-xs text-slate-400 font-mono py-2">
+              <p className="text-xs text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-mono)] py-2">
                 Nenhum vencimento extraordinario neste mes; rendimento composto por accrual continuo da carteira.
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-mono">
+                    <tr className="border-b border-[var(--ds-border-subtle)] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-mono)]">
                       <th className="py-2 pr-4">Data</th>
                       <th className="py-2 pr-4">Tipo</th>
                       <th className="py-2 pr-4">Ativo</th>
@@ -284,18 +286,18 @@ export default function InvestimentosCalendarDashboardPage() {
                       <th className="py-2 text-right">Valor</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-mono tabular-nums">
+                  <tbody className="divide-y divide-[var(--ds-border-subtle)] tabular-financial">
                     {selectedMonth.events.map((ev, i) => (
-                      <tr key={`${ev.date}-${i}`} className="text-slate-200">
-                        <td className="py-2 pr-4">{ev.date}</td>
-                        <td className="py-2 pr-4 uppercase text-indigo-300">
+                      <tr key={`${ev.date}-${i}`} className="text-[var(--ds-text-primary)]">
+                        <td className="py-2 pr-4 tabular-financial">{ev.date}</td>
+                        <td className="py-2 pr-4 uppercase text-[var(--ds-accent-quant)]">
                           {ev.type}
                         </td>
                         <td className="py-2 pr-4">{ev.assetId ?? "-"}</td>
-                        <td className="py-2 pr-4 font-sans text-slate-300">
+                        <td className="py-2 pr-4 font-[family-name:var(--ds-font-sans)] text-[var(--ds-text-secondary)]">
                           {ev.description}
                         </td>
-                        <td className="py-2 text-right text-emerald-400 font-semibold">
+                        <td className="py-2 text-right text-[var(--ds-market-positive)] font-semibold tabular-financial">
                           {formatCentsBRL(ev.amountCents)}
                         </td>
                       </tr>
@@ -310,14 +312,14 @@ export default function InvestimentosCalendarDashboardPage() {
 
       {/* Quick Preview of Minha Carteira & Objetivos */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)] tabular-financial">
               Resumo Minha Carteira (Conservacao Exata 10.000 bps)
             </h3>
             <Link
               href="/investimentos/carteira"
-              className="text-xs font-mono text-indigo-400 hover:text-indigo-300"
+              className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-accent-quant)] hover:underline"
             >
               Ver Carteira Completa -&gt;
             </Link>
@@ -328,16 +330,16 @@ export default function InvestimentosCalendarDashboardPage() {
                 data && (
                   <div
                     key={cls}
-                    className="flex items-center justify-between text-xs bg-slate-900/70 border border-slate-800/80 rounded px-3 py-2"
+                    className="flex items-center justify-between text-xs bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-2"
                   >
-                    <span className="font-mono uppercase text-slate-300">
+                    <span className="font-[family-name:var(--ds-font-mono)] uppercase text-[var(--ds-text-secondary)]">
                       {cls.replace("_", " ")}
                     </span>
-                    <div className="flex items-center gap-4 font-mono tabular-nums">
-                      <span className="text-slate-200">
+                    <div className="flex items-center gap-4 tabular-financial">
+                      <span className="text-[var(--ds-text-primary)]">
                         {formatCentsBRL(data.totalCents)}
                       </span>
-                      <span className="text-indigo-400 font-semibold w-16 text-right">
+                      <span className="text-[var(--ds-accent-quant)] font-semibold w-16 text-right">
                         {formatBpsPercent(data.shareBps)}
                       </span>
                     </div>
@@ -347,14 +349,14 @@ export default function InvestimentosCalendarDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
+        <div className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-100">
-              Metas & Objetivos Financeiros (Alocacao Fracionada)
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+              Metas &amp; Objetivos Financeiros (Alocacao Fracionada)
             </h3>
             <Link
               href="/investimentos/objetivos"
-              className="text-xs font-mono text-indigo-400 hover:text-indigo-300"
+              className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-accent-quant)] hover:underline"
             >
               Gerenciar Objetivos -&gt;
             </Link>
@@ -363,21 +365,21 @@ export default function InvestimentosCalendarDashboardPage() {
             {dashboard.goalsProgress.map((gp) => (
               <div
                 key={gp.goalId}
-                className="bg-slate-900/70 border border-slate-800/80 rounded p-3 space-y-2"
+                className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2"
               >
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-200">{gp.title}</span>
-                  <span className="font-mono text-indigo-400 font-semibold tabular-nums">
+                  <span className="font-medium text-[var(--ds-text-primary)]">{gp.title}</span>
+                  <span className="text-[var(--ds-accent-quant)] font-semibold tabular-financial">
                     {formatBpsPercent(gp.progressBps)}
                   </span>
                 </div>
-                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-[var(--ds-surface-elevated)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500"
+                    className="h-full bg-[var(--ds-accent-quant)]"
                     style={{ width: `${Math.min(100, gp.progressBps / 100)}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 tabular-nums">
+                <div className="flex items-center justify-between text-[11px] text-[var(--ds-text-secondary)] tabular-financial">
                   <span>
                     Alocado: {formatCentsBRL(gp.totalAllocatedCents)} /{" "}
                     {formatCentsBRL(gp.targetAmountCents)}

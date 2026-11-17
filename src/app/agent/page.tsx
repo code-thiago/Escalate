@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { PlatformShell } from "@/src/components/shell/PlatformShell";
 import {
   analyzePortfolioDensityMatrix,
@@ -26,7 +28,77 @@ const ASSET_LABELS = [
   "CAMBIO_USD",
 ];
 
+type QuantEngineKey =
+  | "copilot"
+  | "markowitz"
+  | "dcf"
+  | "black-litterman"
+  | "trading"
+  | "gorules";
+
+const ENGINE_METADATA: Record<
+  QuantEngineKey,
+  { label: string; badge: string; description: string }
+> = {
+  copilot: {
+    label: "Quant AI Copilot (Pipeline Completo)",
+    badge: "CVM-SAFE",
+    description:
+      "Orquestracao integrada entre DTQW SU(2), Matriz Densidade de Von Neumann e regras deterministicas GoRules ZEN.",
+  },
+  markowitz: {
+    label: "Markowitz Efficient Frontier",
+    badge: "< 5ms COVARIANCE",
+    description:
+      "Otimizacao de fronteira eficiente media-variancia sobre 11 classes com restricoes de liquidez e risco sistemico.",
+  },
+  dcf: {
+    label: "Intrinsic Valuation (DCF)",
+    badge: "ZERO-LLM MATH",
+    description:
+      "Desconto de fluxos futuros por WACC e taxa livre de risco soberana (NTN-B IPCA+) sem alucinacao aritmetica.",
+  },
+  "black-litterman": {
+    label: "Black-Litterman Macro Views",
+    badge: "SEC 13F + MACRO",
+    description:
+      "Combinacao bayesiana de equilibrio de mercado com vetores de visao macroeconomica e matriz de incerteza Omega.",
+  },
+  trading: {
+    label: "Trading Desk (GARCH / Kalman)",
+    badge: "ISOLATED",
+    description:
+      "Modelagem isolada de volatilidade condicional GARCH e filtro de Kalman em ambiente desacoplado da custodia core.",
+  },
+  gorules: {
+    label: "GoRules JDM Guardrails",
+    badge: "< 1ms JDM",
+    description:
+      "Auditoria deterministica de suitability, descasamento de liquidez e riscos estruturais via grafos JSON Decision Model.",
+  },
+};
+
+function EngineQuerySync({
+  onSelectEngine,
+}: {
+  onSelectEngine: (engine: QuantEngineKey) => void;
+}) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const param = searchParams?.get("engine") as QuantEngineKey | null;
+    if (param && param in ENGINE_METADATA) {
+      onSelectEngine(param);
+    } else {
+      onSelectEngine("copilot");
+    }
+  }, [searchParams, onSelectEngine]);
+
+  return null;
+}
+
 export default function QuantumAgentPage() {
+  const [activeEngine, setActiveEngine] = useState<QuantEngineKey>("copilot");
   const [horizonDays, setHorizonDays] = useState<number>(40);
   const [decoherenceRate, setDecoherenceRate] = useState<number>(0.25);
   const [annualDriftBps, setAnnualDriftBps] = useState<number>(1345);
@@ -139,34 +211,77 @@ export default function QuantumAgentPage() {
     [dtqw.distribution],
   );
 
+  const activeEngineMeta = ENGINE_METADATA[activeEngine];
+
   return (
     <PlatformShell
       title="Aba 03 — Quantum & GoRules ZEN Predictive AI Agent"
       subtitle="Pipeline Zero-Alucinacao em 3 Estagios: (1) Caminhada Quantica DTQW SU(2) + Entropia de Von Neumann S(rho), (2) Motor de Decisao GoRules ZEN JDM e (3) Sintese Analitica"
     >
-      {/* Stage 1 Controls: Quantum Walk & Open Quantum Decoherence Parameter */}
-      <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-slate-800 pb-3">
-          <div>
-            <span className="font-mono text-[10px] uppercase text-cyan-400">
-              Estagio 01 — Motor Matematico & Quantico (src/core/quant/)
+      <Suspense fallback={null}>
+        <EngineQuerySync onSelectEngine={setActiveEngine} />
+      </Suspense>
+
+      {/* Active Engine Telemetry Mode Strip */}
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-[family-name:var(--ds-font-mono)] uppercase px-2 py-0.5 rounded bg-[var(--ds-accent-quant)]/15 text-[var(--ds-accent-quant)] border border-[var(--ds-accent-quant)]/30 tabular-financial">
+              {activeEngineMeta.badge}
             </span>
-            <h3 className="text-base font-semibold text-slate-100">
-              Parametros do Operador Moeda Unitario SU(2) & Decoerencia Ambiental (gamma)
+            <h2 className="text-sm font-semibold text-[var(--ds-text-primary)]">
+              {activeEngineMeta.label}
+            </h2>
+          </div>
+          <p className="text-xs text-[var(--ds-text-secondary)]">
+            {activeEngineMeta.description}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {(Object.keys(ENGINE_METADATA) as QuantEngineKey[]).map((key) => {
+            const href = key === "copilot" ? "/agent" : `/agent?engine=${key}`;
+            const active = activeEngine === key;
+            return (
+              <Link
+                key={key}
+                href={href}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-[family-name:var(--ds-font-mono)] border transition-colors ${
+                  active
+                    ? "bg-[var(--ds-accent-quant)] text-[var(--ds-bg-primary)] border-[var(--ds-accent-quant)] font-semibold"
+                    : "bg-[var(--ds-bg-primary)] text-[var(--ds-text-secondary)] border-[var(--ds-border-subtle)] hover:text-[var(--ds-text-primary)]"
+                }`}
+              >
+                {key}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Stage 1 Controls: Quantum Walk & Open Quantum Decoherence Parameter */}
+      <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-[var(--ds-border-subtle)] pb-3">
+          <div>
+            <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
+              Estagio 01 — Motor Matematico &amp; Quantico (src/core/quant/)
+            </span>
+            <h3 className="text-base font-semibold text-[var(--ds-text-primary)]">
+              Parametros do Operador Moeda Unitario SU(2) &amp; Decoerencia Ambiental (gamma)
             </h3>
           </div>
-          <span className="font-mono text-xs px-2.5 py-1 rounded bg-cyan-950/50 border border-cyan-500/40 text-cyan-300 tabular-nums">
+          <span className="text-xs px-2.5 py-1 rounded-lg bg-[var(--ds-bg-primary)] border border-[var(--ds-accent-quant)]/40 text-[var(--ds-accent-quant)] tabular-financial">
             Soma Unitariedade P(x,t) = {dtqw.totalProbabilitySum.toFixed(8)}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900/80 border border-slate-800 rounded p-3 space-y-2">
-            <div className="flex justify-between text-xs font-mono">
-              <label htmlFor="slider-horizon" className="text-slate-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2">
+            <div className="flex justify-between text-xs font-[family-name:var(--ds-font-mono)]">
+              <label htmlFor="slider-horizon" className="text-[var(--ds-text-secondary)]">
                 Passos Temporais (T):
               </label>
-              <span className="text-indigo-400 font-bold tabular-nums">
+              <span className="text-[var(--ds-accent-quant)] font-bold tabular-financial">
                 {horizonDays} dias
               </span>
             </div>
@@ -178,16 +293,16 @@ export default function QuantumAgentPage() {
               step={2}
               value={horizonDays}
               onChange={(e) => setHorizonDays(Number(e.target.value))}
-              className="w-full accent-indigo-500 cursor-pointer"
+              className="w-full accent-[var(--ds-accent-quant)] cursor-pointer"
             />
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded p-3 space-y-2">
-            <div className="flex justify-between text-xs font-mono">
-              <label htmlFor="slider-gamma" className="text-slate-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2">
+            <div className="flex justify-between text-xs font-[family-name:var(--ds-font-mono)]">
+              <label htmlFor="slider-gamma" className="text-[var(--ds-text-secondary)]">
                 Decoerencia (gamma):
               </label>
-              <span className="text-cyan-400 font-bold tabular-nums">
+              <span className="text-[var(--ds-accent-quant)] font-bold tabular-financial">
                 {decoherenceRate.toFixed(2)} (
                 {decoherenceRate === 0
                   ? "Quantico Puro"
@@ -205,16 +320,16 @@ export default function QuantumAgentPage() {
               step={0.05}
               value={decoherenceRate}
               onChange={(e) => setDecoherenceRate(Number(e.target.value))}
-              className="w-full accent-cyan-400 cursor-pointer"
+              className="w-full accent-[var(--ds-accent-quant)] cursor-pointer"
             />
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded p-3 space-y-2">
-            <div className="flex justify-between text-xs font-mono">
-              <label htmlFor="slider-drift" className="text-slate-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2">
+            <div className="flex justify-between text-xs font-[family-name:var(--ds-font-mono)]">
+              <label htmlFor="slider-drift" className="text-[var(--ds-text-secondary)]">
                 Drift Anual Esperado:
               </label>
-              <span className="text-emerald-400 font-bold tabular-nums">
+              <span className="text-[var(--ds-market-positive)] font-bold tabular-financial">
                 {formatBpsPercent(annualDriftBps)}
               </span>
             </div>
@@ -226,16 +341,16 @@ export default function QuantumAgentPage() {
               step={50}
               value={annualDriftBps}
               onChange={(e) => setAnnualDriftBps(Number(e.target.value))}
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-[var(--ds-market-positive)] cursor-pointer"
             />
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded p-3 space-y-2">
-            <div className="flex justify-between text-xs font-mono">
-              <label htmlFor="slider-vol" className="text-slate-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3 space-y-2">
+            <div className="flex justify-between text-xs font-[family-name:var(--ds-font-mono)]">
+              <label htmlFor="slider-vol" className="text-[var(--ds-text-secondary)]">
                 Volatilidade Anual:
               </label>
-              <span className="text-amber-400 font-bold tabular-nums">
+              <span className="text-[var(--ds-market-warning)] font-bold tabular-financial">
                 {formatBpsPercent(annualVolBps)}
               </span>
             </div>
@@ -247,45 +362,45 @@ export default function QuantumAgentPage() {
               step={50}
               value={annualVolBps}
               onChange={(e) => setAnnualVolBps(Number(e.target.value))}
-              className="w-full accent-amber-500 cursor-pointer"
+              className="w-full accent-[var(--ds-market-warning)] cursor-pointer"
             />
           </div>
         </div>
 
         {/* Quantum Walk Projected Percentiles & Quantum VaR */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-          <div className="bg-slate-900/90 border border-slate-800 rounded p-3.5 font-mono tabular-nums">
-            <div className="text-[11px] text-slate-400">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3.5 tabular-financial">
+            <div className="text-[11px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
               Cenario Pessimista Quantico (P10)
             </div>
-            <div className="text-lg font-bold text-amber-400 mt-1">
+            <div className="text-lg font-bold text-[var(--ds-market-warning)] mt-1 tabular-financial">
               {formatCentsBRL(dtqw.p10Cents)}
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-indigo-500/40 rounded p-3.5 font-mono tabular-nums">
-            <div className="text-[11px] text-indigo-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-accent-quant)]/40 rounded-lg p-3.5 tabular-financial">
+            <div className="text-[11px] text-[var(--ds-accent-quant)] font-[family-name:var(--ds-font-sans)]">
               Expectativa Mediana DTQW (P50)
             </div>
-            <div className="text-lg font-bold text-slate-100 mt-1">
+            <div className="text-lg font-bold text-[var(--ds-text-primary)] mt-1 tabular-financial">
               {formatCentsBRL(dtqw.p50Cents)}
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-slate-800 rounded p-3.5 font-mono tabular-nums">
-            <div className="text-[11px] text-slate-400">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3.5 tabular-financial">
+            <div className="text-[11px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
               Cenario Superposicao Balistica (P90)
             </div>
-            <div className="text-lg font-bold text-emerald-400 mt-1">
+            <div className="text-lg font-bold text-[var(--ds-market-positive)] mt-1 tabular-financial">
               {formatCentsBRL(dtqw.p90Cents)}
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-red-500/40 rounded p-3.5 font-mono tabular-nums">
-            <div className="text-[11px] text-red-300">
+          <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-market-negative)]/40 rounded-lg p-3.5 tabular-financial">
+            <div className="text-[11px] text-[var(--ds-market-negative)] font-[family-name:var(--ds-font-sans)]">
               Quantum VaR 99% (Risco de Cauda)
             </div>
-            <div className="text-lg font-bold text-red-400 mt-1">
+            <div className="text-lg font-bold text-[var(--ds-market-negative)] mt-1 tabular-financial">
               {formatCentsBRL(dtqw.quantumVaR99Cents)} (
               {formatBpsPercent(dtqw.quantumTailRisk99Bps)})
             </div>
@@ -293,17 +408,17 @@ export default function QuantumAgentPage() {
         </div>
 
         {/* Visual Lattice Probability Distribution P(x, t) */}
-        <div className="bg-slate-950 border border-slate-800 rounded p-4 space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-slate-300">
+        <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between text-xs font-[family-name:var(--ds-font-mono)]">
+            <span className="text-[var(--ds-text-secondary)]">
               Distribuicao de Probabilidade no Reticulado P(x, t) — Interferencia Quantica vs Difusao Classica
             </span>
-            <span className="text-cyan-400">
+            <span className="text-[var(--ds-accent-quant)] tabular-financial">
               {dtqw.distribution.length} estados quanticos ativos
             </span>
           </div>
 
-          <div className="h-40 flex items-end gap-1 pt-4 px-2 border-b border-slate-800">
+          <div className="h-40 flex items-end gap-1 pt-4 px-2 border-b border-[var(--ds-border-subtle)]">
             {dtqw.distribution.map((bin) => {
               const heightPct = Math.max(
                 4,
@@ -318,15 +433,15 @@ export default function QuantumAgentPage() {
                     style={{ height: `${heightPct}%` }}
                     className={`w-full rounded-t transition-all ${
                       bin.returnBps < 0
-                        ? "bg-amber-500/70 group-hover:bg-amber-400"
-                        : "bg-cyan-500/70 group-hover:bg-cyan-300"
+                        ? "bg-[var(--ds-market-warning)]/70 group-hover:bg-[var(--ds-market-warning)]"
+                        : "bg-[var(--ds-accent-quant)]/70 group-hover:bg-[var(--ds-accent-quant)]"
                     }`}
                   />
                 </div>
               );
             })}
           </div>
-          <div className="flex justify-between text-[10px] font-mono text-slate-400 tabular-nums">
+          <div className="flex justify-between text-[10px] text-[var(--ds-text-secondary)] tabular-financial">
             <span>Cauda Esquerda (x = -{horizonDays})</span>
             <span>Origem (x = 0)</span>
             <span>Cauda Direita Balistica (x = +{horizonDays})</span>
@@ -337,53 +452,63 @@ export default function QuantumAgentPage() {
       {/* Stage 1B & Stage 2: Density Matrix / Von Neumann Entropy & GoRules ZEN Trace */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Portfolio Density Matrix & Von Neumann Entropy */}
-        <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4">
-          <div className="border-b border-slate-800 pb-3">
-            <span className="font-mono text-[10px] uppercase text-indigo-400">
+        <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4">
+          <div className="border-b border-[var(--ds-border-subtle)] pb-3">
+            <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-accent-quant)]">
               Operador Matriz Densidade rho = (1/N) * C
             </span>
-            <h3 className="text-sm font-semibold text-slate-100">
+            <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
               Entropia Quantico-Informacional de Von Neumann: S(rho) = -Tr(rho ln rho)
             </h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 text-xs font-mono tabular-nums">
-            <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-              <div className="text-[10px] text-slate-400">Entropia S(rho)</div>
-              <div className="text-base font-bold text-cyan-400 mt-0.5">
+          <div className="grid grid-cols-3 gap-3 text-xs tabular-financial">
+            <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+              <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                Entropia S(rho)
+              </div>
+              <div className="text-base font-bold text-[var(--ds-accent-quant)] mt-0.5 tabular-financial">
                 {density.vonNeumannEntropy.toFixed(4)} nats
               </div>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] text-[var(--ds-text-secondary)] tabular-financial">
                 Max ln({density.dimension}) = {density.maxTheoreticalEntropy.toFixed(3)}
               </div>
             </div>
 
-            <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-              <div className="text-[10px] text-slate-400">Score Diversificacao</div>
-              <div className="text-base font-bold text-emerald-400 mt-0.5">
+            <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+              <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                Score Diversificacao
+              </div>
+              <div className="text-base font-bold text-[var(--ds-market-positive)] mt-0.5 tabular-financial">
                 {formatBpsPercent(density.normalizedEntropyScoreBps)}
               </div>
-              <div className="text-[10px] text-slate-400">Traco(rho) = {density.trace}</div>
+              <div className="text-[10px] text-[var(--ds-text-secondary)] tabular-financial">
+                Traco(rho) = {density.trace}
+              </div>
             </div>
 
-            <div className="bg-slate-900/80 border border-slate-800 rounded p-3">
-              <div className="text-[10px] text-slate-400">Coerencia Sistemica</div>
-              <div className="text-base font-bold text-indigo-400 mt-0.5">
+            <div className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3">
+              <div className="text-[10px] text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
+                Coerencia Sistemica
+              </div>
+              <div className="text-base font-bold text-[var(--ds-text-primary)] mt-0.5 tabular-financial">
                 {(density.systemicCoherenceIndex * 100).toFixed(2)}%
               </div>
-              <div className="text-[10px] text-slate-400">I_sys = 1 - S/ln(N)</div>
+              <div className="text-[10px] text-[var(--ds-text-secondary)]">
+                I_sys = 1 - S/ln(N)
+              </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-mono text-slate-400">
+            <div className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)]">
               Espectro de Autovalores (Eigenvalues lambda_i de rho):
             </div>
-            <div className="flex flex-wrap gap-2 font-mono text-xs tabular-nums">
+            <div className="flex flex-wrap gap-2 text-xs tabular-financial">
               {density.eigenvalues.map((ev, i) => (
                 <span
                   key={i}
-                  className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-200"
+                  className="px-2.5 py-1 rounded-md bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] text-[var(--ds-text-primary)] tabular-financial"
                 >
                   lambda_{i + 1} = {ev.toFixed(4)}
                 </span>
@@ -392,23 +517,23 @@ export default function QuantumAgentPage() {
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-mono text-slate-400">
+            <div className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)]">
               Pares de Maior Emaranhamento (Correlacao Cruzada):
             </div>
             <div className="space-y-1.5">
               {density.entanglementPairs.slice(0, 4).map((pair) => (
                 <div
                   key={`${pair.assetA}-${pair.assetB}`}
-                  className="flex items-center justify-between text-xs font-mono bg-slate-900/70 border border-slate-800 rounded px-3 py-1.5 tabular-nums"
+                  className="flex items-center justify-between text-xs bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg px-3 py-1.5 tabular-financial"
                 >
-                  <span className="text-slate-300">
+                  <span className="text-[var(--ds-text-primary)]">
                     {pair.assetA} &lt;-&gt; {pair.assetB}
                   </span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-indigo-300">
+                  <div className="flex items-center gap-3 tabular-financial">
+                    <span className="text-[var(--ds-accent-quant)] tabular-financial">
                       corr: {pair.correlation.toFixed(2)}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] text-[var(--ds-text-secondary)] tabular-financial">
                       {pair.entanglementSeverity}
                     </span>
                   </div>
@@ -419,14 +544,14 @@ export default function QuantumAgentPage() {
         </section>
 
         {/* Stage 2: GoRules ZEN Engine JDM Trace Inspector */}
-        <section className="bg-[#0f172a] border border-slate-800 rounded-lg p-5 space-y-4 flex flex-col justify-between">
+        <section className="bg-[var(--ds-surface-card)] border border-[var(--ds-border-subtle)] rounded-xl p-5 space-y-4 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--ds-border-subtle)] pb-3 gap-2">
               <div>
-                <span className="font-mono text-[10px] uppercase text-emerald-400">
+                <span className="font-[family-name:var(--ds-font-mono)] text-[10px] uppercase text-[var(--ds-market-positive)]">
                   Estagio 02 — GoRules ZEN Engine (src/core/decision/zen.ts)
                 </span>
-                <h3 className="text-sm font-semibold text-slate-100">
+                <h3 className="text-sm font-semibold text-[var(--ds-text-primary)]">
                   Inspetor de Trace Deterministico (.jdm.json)
                 </h3>
               </div>
@@ -438,7 +563,7 @@ export default function QuantumAgentPage() {
                     e.target.value as typeof selectedJdmGraph,
                   )
                 }
-                className="bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs font-mono text-slate-200"
+                className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-border-subtle)] rounded-lg px-2.5 py-1 text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] focus:outline-none focus:border-[var(--ds-accent-quant)]"
               >
                 <option value="portfolio-quantum-health">
                   portfolio-quantum-health.jdm.json
@@ -452,41 +577,43 @@ export default function QuantumAgentPage() {
               </select>
             </div>
 
-            <pre className="bg-slate-950 border border-slate-800 rounded p-3.5 text-[11px] font-mono text-emerald-300 overflow-x-auto leading-relaxed">
+            <pre className="bg-[var(--ds-bg-primary)] border border-[var(--ds-border-subtle)] rounded-lg p-3.5 text-[11px] font-[family-name:var(--ds-font-mono)] text-[var(--ds-market-positive)] overflow-x-auto leading-relaxed tabular-financial">
               {JSON.stringify(zenExecutionTrace, null, 2)}
             </pre>
           </div>
 
           {/* Stage 3: Zero-Hallucination Analytical Synthesis */}
-          <div className="bg-indigo-950/30 border border-indigo-500/40 rounded-md p-4 space-y-2">
-            <div className="text-xs font-mono uppercase font-semibold text-indigo-300">
+          <div className="bg-[var(--ds-surface-elevated)] border border-[var(--ds-accent-quant)]/40 rounded-lg p-4 space-y-2">
+            <div className="text-xs font-[family-name:var(--ds-font-mono)] uppercase font-semibold text-[var(--ds-accent-quant)]">
               Estagio 03 — Sintese Analitica do Agente (Zero-Alucinacao)
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed">
+            <p className="text-xs text-[var(--ds-text-primary)] leading-relaxed">
               Com horizonte de{" "}
-              <span className="font-mono font-semibold">{horizonDays} dias</span> e
-              taxa de decoerencia{" "}
-              <span className="font-mono font-semibold">
+              <span className="font-semibold tabular-financial">
+                {horizonDays} dias
+              </span>{" "}
+              e taxa de decoerencia{" "}
+              <span className="font-semibold tabular-financial">
                 gamma = {decoherenceRate.toFixed(2)}
               </span>
               , o operador de caminhada quantica projeta mediana patrimonial P50 de{" "}
-              <span className="font-mono font-semibold text-indigo-300">
+              <span className="font-semibold text-[var(--ds-accent-quant)] tabular-financial">
                 {formatCentsBRL(dtqw.p50Cents)}
               </span>{" "}
               e risco de cauda VaR 99% limitado a{" "}
-              <span className="font-mono font-semibold text-amber-300">
+              <span className="font-semibold text-[var(--ds-market-warning)] tabular-financial">
                 {formatCentsBRL(dtqw.quantumVaR99Cents)}
               </span>
               . A entropia de Von Neumann{" "}
-              <span className="font-mono font-semibold text-cyan-300">
+              <span className="font-semibold text-[var(--ds-accent-quant)] tabular-financial">
                 S(rho) = {density.vonNeumannEntropy.toFixed(4)} nats
               </span>{" "}
               confirma{" "}
-              <span className="font-mono font-semibold">
+              <span className="font-semibold tabular-financial">
                 {formatBpsPercent(density.normalizedEntropyScoreBps)}
               </span>{" "}
               da diversificacao ortogonal maxima, aprovada pelo grafo{" "}
-              <span className="font-mono text-emerald-300">
+              <span className="font-[family-name:var(--ds-font-mono)] text-[var(--ds-market-positive)]">
                 portfolio-quantum-health.jdm.json
               </span>
               .

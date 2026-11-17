@@ -179,3 +179,43 @@ export function applyBlackLittermanViews(
 
   return result;
 }
+
+export function calculateMarkowitzPortfolioMetrics(params: {
+  weights: number[];
+  expectedReturns: number[];
+  volatilities: number[];
+  correlationMatrix: number[][];
+  riskFreeRateAnnual: number;
+}): {
+  expectedReturnAnnual: number;
+  volatilityAnnual: number;
+  sharpeRatio: number;
+} {
+  const n = params.weights.length;
+  let expectedReturn = new Decimal(0);
+  for (let i = 0; i < n; i++) {
+    expectedReturn = expectedReturn.plus(
+      new Decimal(params.weights[i]).mul(new Decimal(params.expectedReturns[i]))
+    );
+  }
+  let variance = new Decimal(0);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const term = new Decimal(params.weights[i])
+        .mul(new Decimal(params.weights[j]))
+        .mul(new Decimal(params.volatilities[i]))
+        .mul(new Decimal(params.volatilities[j]))
+        .mul(new Decimal(params.correlationMatrix[i][j]));
+      variance = variance.plus(term);
+    }
+  }
+  const vol = (variance.isNegative() ? new Decimal(0) : variance).sqrt();
+  const sharpe = vol.isZero()
+    ? new Decimal(0)
+    : expectedReturn.minus(new Decimal(params.riskFreeRateAnnual)).div(vol);
+  return {
+    expectedReturnAnnual: Number(expectedReturn.toFixed(6)),
+    volatilityAnnual: Number(vol.toFixed(6)),
+    sharpeRatio: Number(sharpe.toFixed(4)),
+  };
+}

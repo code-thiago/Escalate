@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (!isSessionPending && session?.user) {
       router.replace("/investimentos");
@@ -58,26 +57,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center pb-12">
+    <div className="min-h-screen bg-[var(--ds-bg-primary)] text-[var(--ds-text-primary)] flex flex-col items-center pb-12">
       <header className="w-full max-w-md mx-auto pt-8 px-4 flex items-center justify-between">
         <EscalateLogo size="md" href="/" />
         <Link
           href="/"
-          className="text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
+          className="text-xs font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] hover:text-[var(--ds-text-primary)] transition-colors"
         >
-          &larr; Voltar ao início
+          &larr; Voltar ao terminal
         </Link>
       </header>
 
       <div className="w-full max-w-md mx-auto px-4 mt-8">
-        <div className="bg-card p-6 sm:p-8 rounded-2xl border border-border dark:border-zinc-800 shadow-sm space-y-6">
-          {/* Cabeçalho */}
+        <div className="bg-[var(--ds-surface-card)] p-6 sm:p-8 rounded-2xl border border-[var(--ds-border-subtle)] space-y-6">
+          {/* Cabecalho */}
           <div className="text-center space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--ds-text-primary)]">
               Entrar na sua conta
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Acesse suas simulações salvas e histórico
+            <p className="text-sm text-[var(--ds-text-secondary)]">
+              Acesse suas simulacoes salvas e historico
             </p>
           </div>
 
@@ -85,23 +84,22 @@ export default function LoginPage() {
           {errorMessage && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium leading-relaxed"
+              className="p-3.5 rounded-xl bg-[var(--ds-market-negative)]/10 border border-[var(--ds-market-negative)]/30 text-[var(--ds-market-negative)] text-xs font-medium leading-relaxed"
             >
               {errorMessage}
             </div>
           )}
 
-          {/* Formulário */}
+          {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Campo E-mail */}
             <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block"
+                className="text-xs font-semibold font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] uppercase tracking-wider block"
               >
                 E-mail
               </label>
-              <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
+              <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
                 <input
                   id="email"
                   type="email"
@@ -110,20 +108,19 @@ export default function LoginPage() {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-muted px-3.5 py-2.5 text-base font-medium text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                  className="w-full bg-[var(--ds-bg-primary)] px-3.5 py-2.5 text-base font-medium text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50"
                 />
               </div>
             </div>
 
-            {/* Campo Senha */}
             <div className="space-y-1.5">
               <label
                 htmlFor="password"
-                className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block"
+                className="text-xs font-semibold font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-secondary)] uppercase tracking-wider block"
               >
                 Senha
               </label>
-              <div className="relative rounded-lg border border-border dark:border-zinc-800 overflow-hidden focus-within:ring-2 focus-within:ring-ring dark:focus-within:ring-indigo-500/50 focus-within:border-transparent transition-all">
+              <div className="relative rounded-lg border border-[var(--ds-border-subtle)] overflow-hidden focus-within:border-[var(--ds-accent-quant)] transition-colors">
                 <input
                   id="password"
                   type="password"
@@ -132,21 +129,20 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-muted px-3.5 py-2.5 text-base font-medium text-foreground focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                  className="w-full bg-[var(--ds-bg-primary)] px-3.5 py-2.5 text-base font-medium text-[var(--ds-text-primary)] focus:outline-none placeholder:text-[var(--ds-text-secondary)]/50"
                 />
               </div>
             </div>
 
-            {/* Botão de Envio */}
             <button
               type="submit"
               disabled={isLoading || isSessionPending}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold tracking-wide shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-[var(--ds-accent-quant)] hover:opacity-90 text-[var(--ds-bg-primary)] text-sm font-semibold tracking-wide transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading ? (
                 <>
                   <svg
-                    className="animate-spin h-4 w-4 text-white"
+                    className="animate-spin h-4 w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -173,13 +169,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Rodapé com link para cadastro */}
-          <div className="text-center pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              Não tem uma conta?{" "}
+          <div className="text-center pt-2 border-t border-[var(--ds-border-subtle)]">
+            <p className="text-xs text-[var(--ds-text-secondary)]">
+              Nao tem uma conta?{" "}
               <Link
                 href="/registro"
-                className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="font-semibold text-[var(--ds-accent-quant)] hover:underline"
               >
                 Cadastre-se
               </Link>
