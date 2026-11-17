@@ -93,6 +93,10 @@ CREATE TABLE IF NOT EXISTS macro_knowledge_embeddings (
    - Validates Bayesian qualitative market views (`ticker`, `directionalShock` in `[-0.30, 0.30]`, `confidenceOmega` in `[0.01, 0.99]`, `rationaleDigest` max `280` chars).
 6. **`CoeOpportunityAuditSchema`**:
    - Validates structured COE opportunity cost audits (`coeTicker`, `expectedReturnAnnual`, `cdiBenchmarkAnnual`, `liquidityDays >= 0`, `illiquidityPenaltyAnnual`, `netSpreadVsCdiAnnual`, `verdict` in `['SUBOPTIMAL_VS_CDI', 'COMPETITIVE']`).
+7. **WP-04 Stochastic Trading, OCR Normalization & SaaS Token Metering Contracts (`apps/api/src/modules/`, `src/app/api/escalate/trading-ocr/route.ts`)**:
+   - **`trading-stochastic-engine.ts`**: Enforces GARCH(1,1) stationarity (`alpha + beta < 1`, `omega > 0`, `alpha >= 0`, `beta >= 0` -> throws `GARCH_NON_STATIONARY_PARAMS`) and recursive 1D Kalman Filter (`noisyPrices.length >= 2`, `processNoiseQ > 0`, `measurementNoiseR > 0`).
+   - **`ocr-statement-normalizer.ts`**: Rejects unstructured OCR items with `confidenceScore < 0.80` into `rejectedLowConfidence` and validates accepted COE/Previdencia/Fixed-Income/Fund items against `UnifiedAssetMathVectorSchema`.
+   - **`saas-token-meter.ts` & `POST /api/escalate/trading-ocr`**: Enforces subscription tier quotas (`FREE_TRIAL: 25,000`, `PRO_QUANT: 250,000`, `INSTITUTIONAL: 1,000,000`), bypasses debit on `isZeroTokenDeterministicRoute: true`, and returns HTTP `429` (`SAAS_TOKEN_QUOTA_EXCEEDED`) when exhausted.
 
 ---
 

@@ -38,6 +38,11 @@
 * **`WP-03.2` (`QUANT & AGENT DIGEST API`)**: Implement DCF, Markowitz covariance, Black-Litterman posterior, and pre-LLM agent digest route handlers with CVM Resolution 20 guardrails. Verified by `apps/api/tests/wp03-2-quant-api.test.ts`.
 * **`WP-03.3` (`SEMANTIC 6H CACHE & WORKER POOL`)**: Implement `SemanticAssetCache` (`apps/api/src/modules/agent/semantic-asset-cache.ts`, `21_600_000 ms` TTL with concurrent in-flight coalescing) and `runQuantTaskIsolated` (`apps/api/src/modules/quant/quant-worker-pool.ts`). Verified by `apps/api/tests/wp03-3-worker-cache.test.ts`.
 
+### WP-04: Stochastic Trading Engine (GARCH/Kalman), Atomic SaaS Token Metering & OCR Statement Normalizer (`TDD`)
+* **`WP-04.1` (`GARCH(1,1) & KALMAN ENGINE`)**: Implement `calculateGarch11ConditionalVolatility` (`alpha + beta < 1` stationarity guardrail) and `runKalmanFilterPriceSeries` in `apps/api/src/modules/quant/trading-stochastic-engine.ts`. Verified by `apps/api/tests/wp04-1-garch-kalman.test.ts`.
+* **`WP-04.2` (`SAAS TOKEN METER & OCR NORMALIZER`)**: Implement `SaaSTokenMeter` (`apps/api/src/modules/billing/saas-token-meter.ts`) and `normalizeOcrExtractedHoldings` (`apps/api/src/modules/portfolio/ocr-statement-normalizer.ts`, `confidenceScore >= 0.80` threshold). Verified by `apps/api/tests/wp04-2-ocr-metering.test.ts`.
+* **`WP-04.3` (`UNIFIED TRADING & OCR API ROUTE`)**: Implement `POST /api/escalate/trading-ocr` (`src/app/api/escalate/trading-ocr/route.ts`) supporting `RUN_GARCH_KALMAN` (`0` LLM tokens) and `INGEST_OCR_STATEMENT` (HTTP `429` quota gate). Verified by `apps/api/tests/wp04-3-trading-ocr-api.test.ts`.
+
 ### Legacy Waves 1–4 (Baseline Simulator Features — Maintained)
 * Preserves pure validator (`src/core/validadorSimulacao.ts` / `src/core/finance/`), Drizzle RLS (`src/db/schema.ts`), and Upstash rate-limited API handlers (`src/app/api/*`).
 
@@ -52,6 +57,7 @@
 | **`US-07` (Quant & CVM Guard)** | `[CVM_GUARD: ENFORCED]` Topbar Telemetry | Deterministic Worker + GoRules Token Gate Flow | `UnifiedAssetMathVectorSchema` + `DCFInputSchema` + JDM | `decimal.js` (precision 36) + `@gorules/zen-engine` | `T-1.1`, `T-1.2`, `T-1.3`, `T-1.4`, `quant-and-cvm-guard.test.ts` |
 | **`WP-02.1..WP-02.4` (Vault, SINACOR, Markowitz/BL, Digest Bridge)** | `.tabular-financial` Custody & Copilot Telemetry | `FLOW-INGESTION-SINACOR-01`, `FLOW-VAULT-AES256-01`, `FLOW-AGENT-DIGEST-01` | `EncryptedApiVaultRecordSchema`, `BlackLittermanViewSchema`, `CoeOpportunityAuditSchema` | AES-256-GCM + B3 Parser + Markowitz/BL + `< 350` Token Digest | `wp02-1-vault.test.ts`, `wp02-2-sinacor-coe.test.ts`, `wp02-3-markowitz-bl.test.ts`, `wp02-4-bridge.test.ts` |
 | **`WP-03.1..WP-03.3` (Custody/Quant APIs, 6h Cache, Worker Pool)** | Terminal API Telemetry & Cache Badges | Deterministic Worker + 6h Cache Gate (`21_600_000 ms`) | Custody/Quant API Contracts & CVM Guard | `SemanticAssetCache` + `runQuantTaskIsolated` | `wp03-1-custody-api.test.ts`, `wp03-2-quant-api.test.ts`, `wp03-3-worker-cache.test.ts` |
+| **`WP-04.1..WP-04.3` (GARCH/Kalman, Token Meter, OCR Normalizer & API)** | `.tabular-financial` Volatility, Z-Score & Quota Telemetry | Zero-Token `RUN_GARCH_KALMAN` + `INGEST_OCR_STATEMENT` (`429` Gate) | `trading-stochastic-engine.ts`, `ocr-statement-normalizer.ts`, `saas-token-meter.ts` | GARCH(1,1) + 1D Kalman Filter + ADR-002 Token Quota | `wp04-1-garch-kalman.test.ts`, `wp04-2-ocr-metering.test.ts`, `wp04-3-trading-ocr-api.test.ts` |
 
 ---
 

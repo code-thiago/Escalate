@@ -47,9 +47,9 @@ All heterogeneous instruments normalize into `UnifiedAssetMathVectorSchema`:
 
 ### 3.3 Zero-Cost Ingestion & Quantitative Engine (`apps/api/src/modules/`)
 * **SINACOR / B3 Deterministic Parser**: Parses standardized brokerage PDFs and CEI/B3 CSV files locally at `0` token cost.
-* **On-Demand OCR (`Gemini 2.5 Flash`)**: Invoked strictly when deterministic parsers fail on unstructured bank PDFs, gated by GoRules `token-metering-gate.jdm.json`.
+* **On-Demand OCR (`Gemini 2.5 Flash`) & Atomic Token Metering**: Invoked strictly when deterministic parsers fail on unstructured bank PDFs (`ocr-statement-normalizer.ts`, `confidenceScore >= 0.80`), gated by GoRules `token-metering-gate.jdm.json` and `SaaSTokenMeter` (`FREE_TRIAL: 25,000`, `PRO_QUANT: 250,000`, `INSTITUTIONAL: 1,000,000`).
 * **Read-Only Exchange Custody**: Exchange API keys stored strictly via `AES-256-GCM` envelope encryption with withdrawal permissions rejected.
-* **128-bit Precision Quant Engine (`decimal.js`)**: Computes DCF Enterprise Value (`WACC > g` enforced) and Portfolio Sharpe Ratio (`precision: 36`, `ROUND_HALF_EVEN`).
+* **128-bit Precision Quant & Stochastic Trading Engine (`decimal.js`)**: Computes DCF Enterprise Value (`WACC > g` enforced), Portfolio Sharpe Ratio, Markowitz/Black-Litterman allocations, GARCH(1,1) conditional volatility (`alpha + beta < 1`), and 1D recursive Kalman Filter price series (`trading-stochastic-engine.ts`, `precision: 36`, `ROUND_HALF_EVEN`).
 
 ---
 
@@ -62,6 +62,7 @@ All heterogeneous instruments normalize into `UnifiedAssetMathVectorSchema`:
 * **`US-05`**: Zero-Trust Tenant Isolation (`pgPolicy` RLS), LGPD Art. 18 Cascade Erasure, Doppler In-Memory Secret Injection (`doppler run`), and `.gitleaks.toml` key scanning.
 * **`US-06`**: Live Market Telemetry Bar with Dual-Tier Upstash Rate Limiting (`Brapi` + `Alpha Vantage`).
 * **`US-07`** *(Escalate WP-01)*: Unified 11-Class Asset Normalization (`UnifiedAssetMathVectorSchema`), Deterministic DCF & Portfolio Sharpe Engine (`decimal.js`), and GoRules CVM Resolution 20 Grammar Enforcement (`enforceCvmResolution20Grammar` blocking imperative recommendation verbs).
+* **`US-08`** *(Escalate WP-04)*: Isolated Warm/Hot Path Stochastic Trading Engine (`calculateGarch11ConditionalVolatility`, `runKalmanFilterPriceSeries`), Gemini Flash Vision OCR Statement Normalizer (`normalizeOcrExtractedHoldings` rejecting `< 0.80` confidence), Atomic SaaS Token Quota Ledger (`SaaSTokenMeter`), and Unified Trading/OCR Metered Endpoint (`POST /api/escalate/trading-ocr`).
 
 ---
 
