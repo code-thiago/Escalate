@@ -1,131 +1,146 @@
-# finance-simulator
+# Escalate
 
-Financial calculations for TypeScript. Pure functions, compound arithmetic, zero floating-point drift.
+**Versao:** `1.1.1`
 
+Plataforma quantitativa e terminal financeiro em TypeScript/Next.js para simulacao patrimonial, analise de produtos financeiros, custodia consolidada, motores estocasticos e governanca deterministica de risco e adequacao (CVM).
 
-```ts
-import { calcularJurosCompostos } from "@/src/core/jurosCompostos";
+---
 
-// Inputs in BRL and nominal annual rate
-const timeline = calcularJurosCompostos({
-  valorInicial: 5000,   // R$ 5,000.00
-  aporteMensal: 500,    // R$ 500.00/month
-  taxaAnual: 12.0,      // 12% p.a.
-  periodoMeses: 24,     // 24 months (2 years)
-});
+## Visao Geral
 
-const lastMonth = timeline[timeline.length - 1];
-// => { mes: 24, valorInvestido: 17000, valorTotal: 19890.31, jurosAcumulados: 2890.31 }
+O **Escalate** unifica calculos financeiros de alta precisao, modelagem quantitativa e integracao com dados de mercado em um terminal unico (`EscalateTerminalShell`):
+
+- **Motor Financeiro Deterministico (`src/core/finance`)**: Calculo de juros compostos em aritmetica inteira/decimal sem drift de ponto flutuante, comparador de renda fixa (CDB, Tesouro Selic, Poupanca pela Lei 12.703/2012), tabela regressiva de IR, regras de FGC, metas financeiras e catalogo de 10 classes de produtos (Bolsa, Cambio, COE, Cripto, ETFs, Fundos, Renda Fixa, Tesouro Direto).
+- **Motor Quantico e Estocastico (`src/core/quant` e `apps/api/src/modules/quant`)**: Otimizacao de carteira (Markowitz / Black-Litterman), projecao via matriz de densidade e quantum walk, alem de modelos GARCH e filtro de Kalman em worker pool isolado.
+- **Regras Deterministicas JDM (`src/core/decision`)**: Avaliacao de adequacao e guardrails via `@gorules/zen-engine` (`cvm-suitability-guard`, `goal-allocation-guard`, `portfolio-quantum-health`, `product-critical-analysis`, `token-metering-gate`).
+- **Custodia, SINACOR e OCR (`apps/api/src/modules/portfolio`)**: Parser de notas SINACOR/B3, normalizador de extratos via OCR, bridge de custodia-quant e cofre criptografado AES-256-GCM (`envelope-vault.ts`).
+- **Cotacoes e Cache Multi-Tenant**: Integracao com Brapi (acoes B3) e Alpha Vantage (cambio) com cache semantico de 6h e rate limiting distribuido via Upstash Redis.
+- **Autenticacao e Persistencia**: Better Auth com sessao verificada no servidor e persistencia no Neon Postgres via Drizzle ORM.
+
+---
+
+## Stack Tecnologica
+
+- **Framework**: Next.js 15 (`App Router`, React 19)
+- **Linguagem**: TypeScript 5 (`strict`)
+- **Estilizacao**: Tailwind CSS v4 + Design Tokens `--ds-*` (`packages/ui-tokens`)
+- **Banco de Dados e ORM**: Neon Serverless Postgres + Drizzle ORM
+- **Autenticacao**: Better Auth
+- **Rate Limiting e Cache**: Upstash Redis (`@upstash/ratelimit`)
+- **Regras de Decisao**: GoRules ZEN Engine (`@gorules/zen-engine`)
+- **Precisao Numerica e Validacao**: `decimal.js`, `zod`
+- **Estado e Graficos**: TanStack Query v5, Recharts
+- **Testes e Seguranca**: Vitest, Gitleaks
+
+---
+
+## Estrutura do Monorepo
+
+```text
+Escalate/
+├── apps/
+│   ├── api/                 # Modulos backend (quant, portfolio/SINACOR/OCR, security vault, agent cache, billing) e testes WP-02..WP-05
+│   └── web/                 # Componentes especificos da camada web
+├── packages/
+│   ├── contracts/           # Contratos Zod compartilhados (AssetVector, schemas de custodia e quant)
+│   └── ui-tokens/           # Tokens CSS semanticos (--ds-*)
+├── src/
+│   ├── core/
+│   │   ├── finance/         # Juros compostos, comparador, tributacao, FGC, metas e catalogo de produtos
+│   │   ├── quant/           # Matriz de densidade e quantum walk
+│   │   └── decision/        # Grafos JDM e executor @gorules/zen-engine
+│   ├── api/                 # Cliente HTTP interno e hooks TanStack Query
+│   ├── connectors/          # Adaptadores de corretoras e fontes externas
+│   ├── db/                  # Schema Drizzle ORM e conexao Neon Postgres
+│   ├── lib/                 # Better Auth, Upstash Redis, formatadores e utilitarios
+│   ├── components/          # EscalateTerminalShell, brand, market, simulacoes
+│   └── app/                 # Next.js App Router (paginas e API Route Handlers)
+├── tests/                   # Mocks e testes de banco/integracao
+└── scripts/                 # Utilitarios de diagnostico e validacao
 ```
 
 ---
 
-## Overview
+## Rotas Principais
 
-**finance-simulator** is a web application for financial planning and wealth projection:
-- **Compound Interest Calculator**: Iterative month-by-month projection with regular contributions and interactive Recharts visualization.
-- **Fixed Income Comparator**: Real-time net yield comparison across Brazilian post-fixed CDB, Tesouro Selic, and Savings (Poupança).
-- **Live Market Quotes**: Real-time quotes for B3 Brazilian equities (Brapi API) and global currency pairs (Alpha Vantage API) backed by distributed caching and rate limiting.
-- **User Accounts**: Cloud-persisted scenario storage using Better Auth to save, reload, and organize simulations.
+### Interface Web (`src/app`)
+- `/` — Terminal principal e entrada unificada (`EscalateTerminalShell`)
+- `/agent` — Terminal do agente quantitativo e previsoes
+- `/investimentos` — Visao geral de investimentos
+- `/investimentos/carteira` — Consolidacao e analise de carteira
+- `/investimentos/conexoes` — Gestao de conexoes e custodia
+- `/investimentos/objetivos` — Planejamento e acompanhamento de metas
+- `/produtos` e `/produtos/[categoria]` — Catalogo e analise critica de produtos financeiros
+- `/login`, `/registro` — Fluxos de autenticacao (Better Auth)
+- `/sobre` — Documentacao tecnica da arquitetura
 
----
-
-## Stack
-
-- **Framework**: Next.js 15 (App Router, Server & Client Components)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Database & ORM**: Neon (Serverless Postgres) with Drizzle ORM
-- **Authentication**: Better Auth
-- **Rate Limiting & Cache**: Upstash Redis (`@upstash/ratelimit`)
-- **State Management & Caching**: TanStack Query
-- **Charts**: Recharts
-- **Testing**: Vitest
-
----
-
-## Why This Project Exists
-
-Consuming a market quote API and rendering inputs is trivial. The purpose of this project is to implement real-world financial and fiscal logic with mathematical precision, where naive simplifications produce inaccurate results:
-
-- **Real Regressive Income Tax Table**: For CDB and Tesouro Selic, income tax applies strictly to gross capital gains across statutory Brazilian brackets (22.5% up to 6 months, 20.0% up to 12 months, 17.5% up to 24 months, and 15.0% beyond 24 months).
-- **Savings Account Rule (Brazilian Federal Law 12,703/2012)**: Yield dynamics adapt to the benchmark Selic rate. If target Selic exceeds 8.5% p.a., return is 0.5% per month + TR (Reference Rate); otherwise, it yields 70% of the annualized Selic converted to a monthly equivalent + TR, maintaining full tax exemption for individuals.
-- **Cent-Based Integer Arithmetic Against Floating-Point Drift**: In simulations running up to 360 iterations (30 years), standard IEEE 754 floating-point numbers accumulate recurring decimal drift (`0.1 + 0.2 !== 0.3`). The internal engine operates entirely on integer cents with discrete monthly rounding (`Math.round`), preventing fractional drift over hundreds of capitalizations.
-- **Saved Simulations Never Store Computed Totals**: The database persists exclusively raw input parameters (`jsonb`). Projections are always recomputed on the fly through the same pure, thoroughly tested functions used in the live view, ensuring historical records never diverge from updated core logic.
+### API Route Handlers (`src/app/api`)
+- `/api/auth/[...all]` — Endpoints Better Auth
+- `/api/escalate/custody` — Custodia e auditoria de ativos/COE
+- `/api/escalate/quant` — Execucao de endpoints quantitativos
+- `/api/escalate/trading-ocr` — Normalizacao OCR de extratos e notas
+- `/api/agent/forecast` — Previsoes e motor de agente
+- `/api/carteira`, `/api/conexoes`, `/api/simulacoes` — Gestao autenticada de carteira, conexoes e simulacoes
+- `/api/cotacoes/acao`, `/api/cotacoes/cambio` — Cotacoes B3 e cambio
+- `/api/produtos/analise` — Analise de produtos via motor de decisao
 
 ---
 
-## Getting Started Locally
+## Configuracao Local
 
-### Prerequisites
-- Node.js 18+ or 20+
-- A [Neon](https://neon.tech) account (PostgreSQL)
-- An [Upstash](https://upstash.com) account (Redis)
-- A free token from [Brapi](https://brapi.dev) (B3 equities)
-- An API key from [Alpha Vantage](https://www.alphavantage.co) (Forex)
+### Pre-requisitos
+- Node.js 20+
+- Conta [Neon](https://neon.tech) (PostgreSQL)
+- Conta [Upstash](https://upstash.com) (Redis)
+- Token [Brapi](https://brapi.dev) (acoes B3) e chave [Alpha Vantage](https://www.alphavantage.co) (cambio) — opcionais em dev com mocks
 
-### Environment Variables
-Create a `.env.local` file in the project root:
+### Variaveis de Ambiente
+Copie `.env.example` para `.env.local` na raiz e preencha:
 
 ```env
 DATABASE_URL=
 BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=
+BETTER_AUTH_URL=http://localhost:3000
 ALPHA_VANTAGE_API_KEY=
 BRAPI_TOKEN=
+REDIS_URL=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
-### Installation and Execution
+### Instalacao e Execucao
+
 ```bash
-# 1. Install dependencies
+# 1. Instalar dependencias
 npm install
 
-# 2. Push schema to Neon Postgres via Drizzle Kit
+# 2. Aplicar schema no Neon Postgres
 npx drizzle-kit push
 
-# 3. Start local development server
+# 3. Iniciar servidor de desenvolvimento
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Acesse `http://localhost:3000`.
 
 ---
 
-## Project Structure
+## Scripts Disponiveis
 
-```
-src/
-├── core/         # Pure domain financial calculation functions and unit tests (zero framework dependency)
-├── api/          # Internal HTTP client, TanStack Query hooks, and market data cache management
-├── db/           # Drizzle ORM schema, relational definitions, and connection to Neon Postgres pooler
-├── lib/          # Better Auth clients (server & browser), currency formatters, and Upstash Redis instances
-├── components/   # React UI components (forms with defensive input ceilings, tables, and Recharts)
-└── app/          # Next.js App Router (public landing, protected /app routes, middleware, and API handlers)
-```
-
----
-
-## Technical Decisions
-
-- **Dual-tier rate limiting**: A global route limiter protects shared external API quotas from total exhaustion, while per-IP limiters prevent any single client from consuming the global budget alone.
-- **Optimistic session authentication**: Session cookie presence is verified directly inside Next.js Middleware without database roundtrips, deferring cryptographic session resolution to API route handlers prior to state mutations.
-- **Two-tiered form input validation**: Individual field bounds prevent invalid inputs, combined with a hard ceiling on the final computed result — exponential compounding can cause numeric overflow even with seemingly reasonable inputs.
-- **Saved simulations store only parameters in jsonb**: Persisting only inputs eliminates calculation duplication between live and historical views, ensuring engine improvements immediately apply across all user data.
+| Comando | Descricao |
+| :--- | :--- |
+| `npm run dev` | Inicia o servidor Next.js em modo desenvolvimento |
+| `npm run dev:local` | Executa pipelines locais via Turborepo |
+| `npm run dev:doppler` | Executa via Turborepo com secrets do Doppler |
+| `npm run build` | Gera o build de producao Next.js |
+| `npm run start` | Inicia o servidor em modo producao |
+| `npm run test` | Executa a suite de testes Vitest |
+| `npm run typecheck` | Valida tipos TypeScript (`tsc --noEmit`) |
+| `npm run lint` | Executa analise estatica ESLint |
+| `npm run security:scan` | Executa varredura de segredos com Gitleaks |
 
 ---
 
-## Testing
+## Licenca
 
-Pure domain calculations in `src/core/` and protected API route handlers are covered by automated unit tests:
-
-```bash
-npx vitest run
-```
-
----
-
-## License
-
-To be determined. Inquire with the author for usage or redistribution permissions.
+Todos os direitos reservados ao autor. Consulte o mantenedor para permissoes de uso ou redistribuicao.
