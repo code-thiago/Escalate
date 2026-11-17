@@ -26,19 +26,17 @@ export interface GraficoComparacaoProps {
   isMounted: boolean;
 }
 
-// Cores de cada produto
 const obterCorProduto = (produto: "CDB" | "TESOURO_SELIC" | "POUPANCA") => {
   switch (produto) {
     case "CDB":
-      return "var(--chart-2)";
+      return "var(--ds-accent-quant)";
     case "TESOURO_SELIC":
-      return "var(--chart-4)";
+      return "var(--ds-market-positive)";
     case "POUPANCA":
-      return "var(--chart-5)";
+      return "var(--ds-text-secondary)";
   }
 };
 
-// Formatador de valores no eixo Y
 const formatarEixoY = (val: number) => {
   if (val >= 1e6) return `R$ ${(val / 1e6).toFixed(1)}M`;
   if (val >= 1e3) return `R$ ${(val / 1e3).toFixed(0)}k`;
@@ -51,13 +49,13 @@ export const GraficoComparacao = memo(function GraficoComparacao({
   isMounted,
 }: GraficoComparacaoProps) {
   return (
-    <div className="bg-card p-6 rounded-2xl border border-border dark:border-zinc-800 shadow-sm flex flex-col h-[350px]">
+    <div className="bg-[var(--ds-surface-card)] p-6 rounded-xl border border-[var(--ds-border-subtle)] flex flex-col h-[350px]">
       <div className="mb-4">
-        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-          Comparação de Valor Líquido
+        <h3 className="text-sm font-bold font-[family-name:var(--ds-font-mono)] text-[var(--ds-text-primary)] uppercase tracking-wider">
+          Comparacao de Valor Liquido
         </h3>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Valores acumulados após o período simulado.
+        <p className="text-xs text-[var(--ds-text-secondary)] mt-0.5">
+          Valores acumulados apos o periodo simulado.
         </p>
       </div>
 
@@ -71,19 +69,18 @@ export const GraficoComparacao = memo(function GraficoComparacao({
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="var(--border)"
-                  className="dark:opacity-10"
+                  stroke="var(--ds-border-subtle)"
                 />
                 <XAxis
                   dataKey="name"
-                  stroke="#A1A1AA"
+                  stroke="#a1a1aa"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   dy={8}
                 />
                 <YAxis
-                  stroke="#A1A1AA"
+                  stroke="#a1a1aa"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
@@ -95,24 +92,24 @@ export const GraficoComparacao = memo(function GraficoComparacao({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-card/95 backdrop-blur-sm p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs space-y-2">
-                          <p className="font-bold text-foreground border-b border-border pb-1">
+                        <div className="bg-[var(--ds-surface-card)] p-4 rounded-xl border border-[var(--ds-border-subtle)] shadow-xl text-xs space-y-2">
+                          <p className="font-bold text-[var(--ds-text-primary)] border-b border-[var(--ds-border-subtle)] pb-1">
                             {data.name}
                           </p>
-                          <div className="space-y-1 font-mono">
+                          <div className="space-y-1 tabular-financial">
                             <div className="flex justify-between gap-6">
-                              <span className="text-muted-foreground">
+                              <span className="text-[var(--ds-text-secondary)] font-[family-name:var(--ds-font-sans)]">
                                 Valor Bruto:
                               </span>
-                              <span className="font-bold tabular-nums text-foreground">
+                              <span className="font-bold tabular-financial text-[var(--ds-text-primary)]">
                                 {formatarMoeda(data.valorBruto)}
                               </span>
                             </div>
-                            <div className="flex justify-between gap-6 border-t border-border pt-1 font-bold">
-                              <span className="text-foreground">
-                                Valor Líquido:
+                            <div className="flex justify-between gap-6 border-t border-[var(--ds-border-subtle)] pt-1 font-bold">
+                              <span className="text-[var(--ds-text-primary)] font-[family-name:var(--ds-font-sans)]">
+                                Valor Liquido:
                               </span>
-                              <span className="tabular-nums text-ring dark:text-indigo-400">
+                              <span className="tabular-financial text-[var(--ds-accent-quant)]">
                                 {formatarMoeda(data.valorLiquido)}
                               </span>
                             </div>
@@ -132,17 +129,17 @@ export const GraficoComparacao = memo(function GraficoComparacao({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-muted border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center">
-              <p className="text-sm font-semibold text-muted-foreground">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--ds-bg-primary)] border border-dashed border-[var(--ds-border-subtle)] rounded-xl p-6 text-center">
+              <p className="text-sm font-semibold text-[var(--ds-text-secondary)]">
                 Preencha os dados
               </p>
-              <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                Insira as configurações de comparação para visualizar o gráfico.
+              <p className="text-xs text-[var(--ds-text-secondary)] mt-1 max-w-xs">
+                Insira as configuracoes de comparacao para visualizar o grafico.
               </p>
             </div>
           )
         ) : (
-          <div className="w-full h-full bg-muted animate-pulse rounded-xl" />
+          <div className="w-full h-full bg-[var(--ds-bg-primary)] animate-pulse rounded-xl border border-[var(--ds-border-subtle)]" />
         )}
       </div>
     </div>

@@ -1,0 +1,147 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input_cvm_guard",
+      "name": "CVM Suitability Guard Input",
+      "type": "inputNode",
+      "position": {
+        "x": 60,
+        "y": 140
+      }
+    },
+    {
+      "id": "dt_cvm_suitability_guard",
+      "name": "CVM Resolution 20 & Quantitative Guardrail Matrix",
+      "type": "decisionTableNode",
+      "position": {
+        "x": 340,
+        "y": 140
+      },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "in_imperative_verb",
+            "name": "Has Imperative Verb",
+            "field": "hasImperativeVerb",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_wacc_gt_growth",
+            "name": "WACC Strictly > g",
+            "field": "waccGtGrowth",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_risk_profile",
+            "name": "Investor Risk Profile",
+            "field": "riskProfile",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_volatility_bps",
+            "name": "Portfolio Volatility (bps)",
+            "field": "volatilityBps",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out_compliant",
+            "name": "Is Compliant",
+            "field": "isCompliant"
+          },
+          {
+            "id": "out_action",
+            "name": "Guard Action",
+            "field": "guardAction"
+          },
+          {
+            "id": "out_reason",
+            "name": "Reason Code",
+            "field": "reasonCode"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "r_cvm_imperative_block",
+            "_description": "Block any output containing imperative investment recommendation verbs under CVM Resolution 20",
+            "in_imperative_verb": "true",
+            "in_wacc_gt_growth": "",
+            "in_risk_profile": "",
+            "in_volatility_bps": "",
+            "out_compliant": "false",
+            "out_action": "'BLOCK_IMPERATIVE_ADVICE'",
+            "out_reason": "'CVM_RESOLUTION_20_IMPERATIVE_VERB'"
+          },
+          {
+            "_id": "r_wacc_math_guard",
+            "_description": "Block DCF calculation when WACC <= terminal growth rate (g)",
+            "in_imperative_verb": "false",
+            "in_wacc_gt_growth": "false",
+            "in_risk_profile": "",
+            "in_volatility_bps": "",
+            "out_compliant": "false",
+            "out_action": "'ABORT_QUANT_COMPUTATION'",
+            "out_reason": "'GORULES_MATH_GUARD_WACC_LE_G'"
+          },
+          {
+            "_id": "r_conservative_vol_cap",
+            "_description": "Flag suitability alert when Conservative profile volatility exceeds 800 bps (8% p.a.)",
+            "in_imperative_verb": "false",
+            "in_wacc_gt_growth": "true",
+            "in_risk_profile": "'CONSERVADOR'",
+            "in_volatility_bps": "> 800",
+            "out_compliant": "true",
+            "out_action": "'WARN_SUITABILITY_DRIFT'",
+            "out_reason": "'SUITABILITY_CONSERVADOR_VOL_EXCEEDED'"
+          },
+          {
+            "_id": "r_moderate_vol_cap",
+            "_description": "Flag suitability alert when Moderate profile volatility exceeds 1800 bps (18% p.a.)",
+            "in_imperative_verb": "false",
+            "in_wacc_gt_growth": "true",
+            "in_risk_profile": "'MODERADO'",
+            "in_volatility_bps": "> 1800",
+            "out_compliant": "true",
+            "out_action": "'WARN_SUITABILITY_DRIFT'",
+            "out_reason": "'SUITABILITY_MODERADO_VOL_EXCEEDED'"
+          },
+          {
+            "_id": "r_cvm_default_pass",
+            "_description": "Permit analytical scenario simulation with mandatory CVM Resolution 20 educational disclaimer",
+            "in_imperative_verb": "false",
+            "in_wacc_gt_growth": "true",
+            "in_risk_profile": "",
+            "in_volatility_bps": "",
+            "out_compliant": "true",
+            "out_action": "'ALLOW_WITH_DISCLAIMER'",
+            "out_reason": "'CVM_RES_20_ANALYTICAL_SAFE'"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output_cvm_guard",
+      "name": "CVM Suitability Guard Response",
+      "type": "outputNode",
+      "position": {
+        "x": 680,
+        "y": 140
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_cvm_input_dt",
+      "sourceId": "input_cvm_guard",
+      "targetId": "dt_cvm_suitability_guard"
+    },
+    {
+      "id": "edge_cvm_dt_output",
+      "sourceId": "dt_cvm_suitability_guard",
+      "targetId": "output_cvm_guard"
+    }
+  ]
+}

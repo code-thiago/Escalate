@@ -1,0 +1,136 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input_token_gate",
+      "name": "Token Metering Gate Input",
+      "type": "inputNode",
+      "position": {
+        "x": 60,
+        "y": 140
+      }
+    },
+    {
+      "id": "dt_token_metering_gate",
+      "name": "Zero-Cost Deterministic & Cache Token Gate",
+      "type": "decisionTableNode",
+      "position": {
+        "x": 340,
+        "y": 140
+      },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "in_deterministic",
+            "name": "Is Deterministic Parser / Math",
+            "field": "isDeterministicParser",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_cache_hit",
+            "name": "Redis 6h Cache Hit",
+            "field": "cacheHit",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_tokens_used",
+            "name": "Monthly Tokens Used",
+            "field": "monthlyTokensUsed",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_quota_limit",
+            "name": "Monthly Quota Limit",
+            "field": "monthlyQuotaLimit",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out_allow_llm",
+            "name": "Allow LLM Invocation",
+            "field": "allowLlmInvocation"
+          },
+          {
+            "id": "out_route_target",
+            "name": "Route Target",
+            "field": "routeTarget"
+          },
+          {
+            "id": "out_ttl_seconds",
+            "name": "Cache TTL Seconds",
+            "field": "cacheTtlSeconds"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "r_deterministic_bypass",
+            "_description": "Route SINACOR CSV/PDF parsing and Decimal.js math directly to zero-token local worker",
+            "in_deterministic": "true",
+            "in_cache_hit": "",
+            "in_tokens_used": "",
+            "in_quota_limit": "",
+            "out_allow_llm": "false",
+            "out_route_target": "'DETERMINISTIC_WORKER'",
+            "out_ttl_seconds": "0"
+          },
+          {
+            "_id": "r_redis_cache_hit",
+            "_description": "Serve multi-tenant asset insight from 6-hour Redis cache with zero LLM tokens",
+            "in_deterministic": "false",
+            "in_cache_hit": "true",
+            "in_tokens_used": "",
+            "in_quota_limit": "",
+            "out_allow_llm": "false",
+            "out_route_target": "'REDIS_CACHE_6H'",
+            "out_ttl_seconds": "21600"
+          },
+          {
+            "_id": "r_quota_exceeded",
+            "_description": "Block LLM invocation when monthly tenant token budget reaches or exceeds 250,000 limit",
+            "in_deterministic": "false",
+            "in_cache_hit": "false",
+            "in_tokens_used": ">= 250000",
+            "in_quota_limit": "<= 250000",
+            "out_allow_llm": "false",
+            "out_route_target": "'QUOTA_EXHAUSTED_FALLBACK'",
+            "out_ttl_seconds": "21600"
+          },
+          {
+            "_id": "r_allow_llm_synthesis",
+            "_description": "Permit qualitative LLM synthesis or on-demand OCR within quota and cache result for 6h",
+            "in_deterministic": "false",
+            "in_cache_hit": "false",
+            "in_tokens_used": "< 250000",
+            "in_quota_limit": "",
+            "out_allow_llm": "true",
+            "out_route_target": "'LLM_QUALITATIVE_COPILOT'",
+            "out_ttl_seconds": "21600"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output_token_gate",
+      "name": "Token Metering Gate Response",
+      "type": "outputNode",
+      "position": {
+        "x": 680,
+        "y": 140
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_token_input_dt",
+      "sourceId": "input_token_gate",
+      "targetId": "dt_token_metering_gate"
+    },
+    {
+      "id": "edge_token_dt_output",
+      "sourceId": "dt_token_metering_gate",
+      "targetId": "output_token_gate"
+    }
+  ]
+}

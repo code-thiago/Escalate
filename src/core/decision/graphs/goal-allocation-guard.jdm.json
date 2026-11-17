@@ -1,0 +1,229 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input_goal_guard",
+      "name": "Goal Guard Input",
+      "type": "inputNode",
+      "position": {
+        "x": 60,
+        "y": 140
+      }
+    },
+    {
+      "id": "dt_goal_allocation_guard",
+      "name": "Goal Allocation Guard Matrix",
+      "type": "decisionTableNode",
+      "position": {
+        "x": 340,
+        "y": 140
+      },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          {
+            "id": "in_tier",
+            "name": "Asset Liquidity Tier",
+            "field": "assetLiquidityTier",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_horizon",
+            "name": "Goal Horizon (Months)",
+            "field": "goalHorizonMonths",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_bps",
+            "name": "Allocation (bps)",
+            "field": "allocationBps",
+            "defaultValue": ""
+          },
+          {
+            "id": "in_profile",
+            "name": "Risk Profile",
+            "field": "riskProfile",
+            "defaultValue": ""
+          }
+        ],
+        "outputs": [
+          {
+            "id": "out_approved",
+            "name": "Approved",
+            "field": "approved"
+          },
+          {
+            "id": "out_violations",
+            "name": "Violations",
+            "field": "violations"
+          },
+          {
+            "id": "out_warnings",
+            "name": "Warnings",
+            "field": "warnings"
+          },
+          {
+            "id": "out_adjusted_bps",
+            "name": "Adjusted Allocation (bps)",
+            "field": "adjustedAllocationBps"
+          }
+        ],
+        "rules": [
+          {
+            "_id": "r_alloc_overflow",
+            "_description": "Reject cumulative or single allocation exceeding 10000 bps (100%)",
+            "in_tier": "",
+            "in_horizon": "",
+            "in_bps": "> 10000",
+            "in_profile": "",
+            "out_approved": "false",
+            "out_violations": "'ALLOCATION_EXCEEDS_MAX_CAP'",
+            "out_warnings": "'CRITICAL_EXCESS_BPS'",
+            "out_adjusted_bps": "10000"
+          },
+          {
+            "_id": "r_alloc_zero_neg",
+            "_description": "Reject zero or negative basis point allocation",
+            "in_tier": "",
+            "in_horizon": "",
+            "in_bps": "<= 0",
+            "in_profile": "",
+            "out_approved": "false",
+            "out_violations": "'INVALID_ALLOCATION_BPS'",
+            "out_warnings": "'ALLOCATION_MUST_BE_POSITIVE'",
+            "out_adjusted_bps": "0"
+          },
+          {
+            "_id": "r_maturity_short_horizon",
+            "_description": "Reject locked asset (at maturity) in short term goal (< 6 months)",
+            "in_tier": "'AT_MATURITY'",
+            "in_horizon": "< 6",
+            "in_bps": "",
+            "in_profile": "",
+            "out_approved": "false",
+            "out_violations": "'MATURITY_MISMATCH_LOCKED_ASSET'",
+            "out_warnings": "'CANNOT_ALLOCATE_LOCKED_ASSET_TO_SHORT_GOAL'",
+            "out_adjusted_bps": "0"
+          },
+          {
+            "_id": "r_d30_short_horizon",
+            "_description": "Reject D+30+ redemption asset in short term goal (< 6 months)",
+            "in_tier": "'D_PLUS_30'",
+            "in_horizon": "< 6",
+            "in_bps": "",
+            "in_profile": "",
+            "out_approved": "false",
+            "out_violations": "'ILLIQUID_SHORT_HORIZON'",
+            "out_warnings": "'REDEMPTION_CYCLE_EXCEEDS_SHORT_TERM_GOAL'",
+            "out_adjusted_bps": "0"
+          },
+          {
+            "_id": "r_d6_to_30_short_horizon",
+            "_description": "Warn on intermediate liquidity (D+6..30) in short term goal (< 6 months)",
+            "in_tier": "'D_6_TO_30'",
+            "in_horizon": "< 6",
+            "in_bps": "",
+            "in_profile": "",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'DELAYED_LIQUIDITY_NOTICE'",
+            "out_adjusted_bps": "allocationBps"
+          },
+          {
+            "_id": "r_cons_locked_concentration",
+            "_description": "Cap conservative allocation to locked asset at 2000 bps (20%)",
+            "in_tier": "'AT_MATURITY'",
+            "in_horizon": "",
+            "in_bps": "> 2000",
+            "in_profile": "'CONSERVADOR'",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'CONSERVATIVE_PROFILE_ILLIQUIDITY_CONCENTRATION'",
+            "out_adjusted_bps": "2000"
+          },
+          {
+            "_id": "r_cons_d30_concentration",
+            "_description": "Cap conservative allocation to D+30+ asset at 3000 bps (30%)",
+            "in_tier": "'D_PLUS_30'",
+            "in_horizon": "",
+            "in_bps": "> 3000",
+            "in_profile": "'CONSERVADOR'",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'CONSERVATIVE_PROFILE_D30_CONCENTRATION'",
+            "out_adjusted_bps": "3000"
+          },
+          {
+            "_id": "r_mod_locked_concentration",
+            "_description": "Warn moderate profile on > 4000 bps locked asset in horizon < 12 months",
+            "in_tier": "'AT_MATURITY'",
+            "in_horizon": "< 12",
+            "in_bps": "> 4000",
+            "in_profile": "'MODERADO'",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'MODERATE_HORIZON_CONCENTRATION_WARNING'",
+            "out_adjusted_bps": "4000"
+          },
+          {
+            "_id": "r_d0_cash_drag_long_horizon",
+            "_description": "Warn on high D+0 cash allocation (> 5000 bps) in long term horizon (> 60 months)",
+            "in_tier": "'D_0'",
+            "in_horizon": "> 60",
+            "in_bps": "> 5000",
+            "in_profile": "",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'OPPORTUNITY_COST_DRAFT_DRAG'",
+            "out_adjusted_bps": "allocationBps"
+          },
+          {
+            "_id": "r_immediate_short_horizon_approved",
+            "_description": "Approve immediate and short liquidity in short horizon (< 6 months)",
+            "in_tier": "'D_0', 'D_1_TO_5'",
+            "in_horizon": "< 6",
+            "in_bps": "",
+            "in_profile": "",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'NONE'",
+            "out_adjusted_bps": "allocationBps"
+          },
+          {
+            "_id": "r_default_approved",
+            "_description": "Default rule approving compatible asset liquidity and goal horizon",
+            "in_tier": "",
+            "in_horizon": "",
+            "in_bps": "",
+            "in_profile": "",
+            "out_approved": "true",
+            "out_violations": "'NONE'",
+            "out_warnings": "'NONE'",
+            "out_adjusted_bps": "allocationBps"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output_goal_guard",
+      "name": "Goal Guard Response",
+      "type": "outputNode",
+      "position": {
+        "x": 680,
+        "y": 140
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_goal_input_dt",
+      "sourceId": "input_goal_guard",
+      "targetId": "dt_goal_allocation_guard"
+    },
+    {
+      "id": "edge_goal_dt_output",
+      "sourceId": "dt_goal_allocation_guard",
+      "targetId": "output_goal_guard"
+    }
+  ]
+}

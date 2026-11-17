@@ -1,0 +1,43 @@
+/* packages/ui-tokens/src/tokens.css */
+@layer base {
+  :root {
+    /* Tier 1: Primitives */
+    --raw-void-950: #09090b;
+    --raw-void-900: #121215;
+    --raw-void-850: #18181c;
+    --raw-void-800: #27272a;
+    --raw-slate-100: #fafafa;
+    --raw-slate-300: #d4d4d8;
+    --raw-slate-400: #a1a1aa;
+    --raw-emerald-400: #34d399;
+    --raw-crimson-400: #f87171;
+    --raw-amber-400: #fbbf24;
+    --raw-cyan-400: #38bdf8;
+
+    /* Tier 2: Semantic Tokens (WCAG 2.2 AAA Verified on #09090B) */
+    --ds-bg-primary: var(--raw-void-950);
+    --ds-surface-card: var(--raw-void-900);
+    --ds-surface-elevated: var(--raw-void-850);
+    --ds-border-subtle: var(--raw-void-800);
+
+    --ds-text-primary: var(--raw-slate-100);     /* Contrast 19.3:1 AAA */
+    --ds-text-secondary: var(--raw-slate-400);   /* Contrast 7.8:1 AAA */
+
+    --ds-market-positive: var(--raw-emerald-400); /* Contrast 10.4:1 AAA */
+    --ds-market-negative: var(--raw-crimson-400); /* Contrast 7.2:1 AAA */
+    --ds-market-warning: var(--raw-amber-400);    /* Contrast 12.1:1 AAA */
+    --ds-accent-quant: var(--raw-cyan-400);       /* Contrast 9.6:1 AAA */
+
+    /* Tier 3: Component Slots */
+    --ds-sidebar-width: 272px;
+    --ds-topbar-height: 56px;
+    --ds-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --ds-font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+  }
+
+  .tabular-financial {
+    font-family: var(--ds-font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
