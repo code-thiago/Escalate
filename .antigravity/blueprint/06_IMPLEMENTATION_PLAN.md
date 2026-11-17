@@ -27,10 +27,16 @@
 * **`T-1.3` (`GORULES JDM`)**: Create `src/core/decision/graphs/cvm-suitability-guard.jdm.json` and `src/core/decision/graphs/token-metering-gate.jdm.json`; register both in `src/core/decision/zen.ts` `preloadGraphs()`.
 * **`T-1.4` (`TDD VERIFY`)**: Author and pass `apps/api/tests/quant-and-cvm-guard.test.ts` (DCF Enterprise Value, `GORULES_MATH_GUARD`, `TESOURO` + `CRYPTO` Sharpe calculation, and CVM Resolution 20 imperative verb blocking).
 
-### WP-02: Governance Matrix & Quality Verification Gates
-* **`T-2.1` (`DOCS`)**: Author root `DESIGN.md` and synchronize `.antigravity/blueprint/01_PRD.md` through `06_IMPLEMENTATION_PLAN.md`, `BLUEPRINT_STATUS.json`, and `WAR_ROOM.md`.
-* **`T-2.2` (`VERIFY`)**: Execute `npm run typecheck` (`tsc --noEmit`) and `npm test` (`vitest run`) across all legacy (`src/`, `tests/`) and new (`apps/api/tests/`) suites — `100%` pass required.
-* **`T-2.3` (`SECOND BRAIN & GIT`)**: Execute `second-brain-cli.ps1 log`, `second-brain-cli.ps1 sync`, and commit on `develop` using `caveman-commit` semantics.
+### WP-02: Custody Vault, SINACOR/COE Ingestion, Markowitz/Black-Litterman & Pre-LLM Agent Bridge (`TDD`)
+* **`WP-02.1` (`VAULT & CONTRACTS`)**: Expand `packages/contracts/src/asset-vector.ts` (`EncryptedApiVaultRecordSchema`, `BlackLittermanViewSchema`, `CoeOpportunityAuditSchema`) and implement `apps/api/src/modules/security/envelope-vault.ts` (`encryptBrokerApiKey`, `decryptBrokerApiKey`). Verified by `apps/api/tests/wp02-1-vault.test.ts`.
+* **`WP-02.2` (`SINACOR & COE INGESTION`)**: Implement deterministic B3/SINACOR parser (`apps/api/src/modules/portfolio/sinacor-b3-parser.ts`) and COE opportunity cost auditor (`auditCoeAgainstCdi`). Verified by `apps/api/tests/wp02-2-sinacor-coe.test.ts`.
+* **`WP-02.3` (`MARKOWITZ & BLACK-LITTERMAN`)**: Expand `apps/api/src/modules/quant/quant-engine.ts` with Markowitz covariance/weights and Black-Litterman posterior return blending. Verified by `apps/api/tests/wp02-3-markowitz-bl.test.ts`.
+* **`WP-02.4` (`PRE-LLM BRIDGE & BLUEPRINT SYNC`)**: Implement `apps/api/src/modules/portfolio/custody-quant-bridge.ts` (`buildCompactPortfolioDigestForAgent` `< 1400` chars with CVM Resolution 20 grammar enforcement), verify via `apps/api/tests/wp02-4-bridge.test.ts`, synchronize `.antigravity/blueprint/` (`03_APP_FLOW.md`, `05_BACKEND_SCHEMA.md`, `06_IMPLEMENTATION_PLAN.md`, `BLUEPRINT_STATUS.json`), and pass full `vitest` + `tsc --noEmit` gates.
+
+### WP-03: Custody & Quant API Routes, 6-Hour Multi-Tenant Semantic Cache & Off-Thread Worker Pool (`TDD`)
+* **`WP-03.1` (`CUSTODY & VAULT API`)**: Implement custody ingestion (SINACOR/B3 CSV + COE audit) and AES-256-GCM broker key vault handlers. Verified by `apps/api/tests/wp03-1-custody-api.test.ts`.
+* **`WP-03.2` (`QUANT & AGENT DIGEST API`)**: Implement DCF, Markowitz covariance, Black-Litterman posterior, and pre-LLM agent digest route handlers with CVM Resolution 20 guardrails. Verified by `apps/api/tests/wp03-2-quant-api.test.ts`.
+* **`WP-03.3` (`SEMANTIC 6H CACHE & WORKER POOL`)**: Implement `SemanticAssetCache` (`apps/api/src/modules/agent/semantic-asset-cache.ts`, `21_600_000 ms` TTL with concurrent in-flight coalescing) and `runQuantTaskIsolated` (`apps/api/src/modules/quant/quant-worker-pool.ts`). Verified by `apps/api/tests/wp03-3-worker-cache.test.ts`.
 
 ### Legacy Waves 1–4 (Baseline Simulator Features — Maintained)
 * Preserves pure validator (`src/core/validadorSimulacao.ts` / `src/core/finance/`), Drizzle RLS (`src/db/schema.ts`), and Upstash rate-limited API handlers (`src/app/api/*`).
@@ -43,7 +49,9 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **`US-01..US-06` (Baseline)** | Legacy `globals.css` vars + `.tabular-nums` | `/app`, `/app/comparador`, `/minhas-simulacoes` | `simulacoes` + `pgPolicy` RLS + STRIDE | Pure `src/core/`, Upstash Dual-Tier RL | Legacy suites (`src/**/*.test.ts`, `tests/**/*.test.ts`) |
 | **`US-07` (`EscalateTerminalShell`)** | `--ds-*` 3-Tier WCAG 2.2 AAA + `.tabular-financial` | Custody Accordion + `Cmd+K` Command Palette | `portfolio_positions` + `custody_api_vault` DDL | Hybrid Turborepo (`apps/web`, `packages/ui-tokens`) | `T-0.1`, `T-0.2`, `T-0.3` |
-| **`US-07` (Quant & CVM Guard)** | `[CVM_GUARD: ENFORCED]` Topbar Telemetry | Deterministic Worker + GoRules Token Gate Flow | `UnifiedAssetMathVectorSchema` + `DCFInputSchema` + JDM | `decimal.js` (precision 36) + `@gorules/zen-engine` | `T-1.1`, `T-1.2`, `T-1.3`, `T-1.4`, `T-2.2` |
+| **`US-07` (Quant & CVM Guard)** | `[CVM_GUARD: ENFORCED]` Topbar Telemetry | Deterministic Worker + GoRules Token Gate Flow | `UnifiedAssetMathVectorSchema` + `DCFInputSchema` + JDM | `decimal.js` (precision 36) + `@gorules/zen-engine` | `T-1.1`, `T-1.2`, `T-1.3`, `T-1.4`, `quant-and-cvm-guard.test.ts` |
+| **`WP-02.1..WP-02.4` (Vault, SINACOR, Markowitz/BL, Digest Bridge)** | `.tabular-financial` Custody & Copilot Telemetry | `FLOW-INGESTION-SINACOR-01`, `FLOW-VAULT-AES256-01`, `FLOW-AGENT-DIGEST-01` | `EncryptedApiVaultRecordSchema`, `BlackLittermanViewSchema`, `CoeOpportunityAuditSchema` | AES-256-GCM + B3 Parser + Markowitz/BL + `< 350` Token Digest | `wp02-1-vault.test.ts`, `wp02-2-sinacor-coe.test.ts`, `wp02-3-markowitz-bl.test.ts`, `wp02-4-bridge.test.ts` |
+| **`WP-03.1..WP-03.3` (Custody/Quant APIs, 6h Cache, Worker Pool)** | Terminal API Telemetry & Cache Badges | Deterministic Worker + 6h Cache Gate (`21_600_000 ms`) | Custody/Quant API Contracts & CVM Guard | `SemanticAssetCache` + `runQuantTaskIsolated` | `wp03-1-custody-api.test.ts`, `wp03-2-quant-api.test.ts`, `wp03-3-worker-cache.test.ts` |
 
 ---
 

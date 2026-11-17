@@ -87,6 +87,12 @@ CREATE TABLE IF NOT EXISTS macro_knowledge_embeddings (
 3. **`enforceCvmResolution20Grammar(text: string)`**:
    - Deterministic regex barrier detecting `/\b(compre|venda|aloque|invista|resgate|troque|compre\s+agora|venda\s+agora)\b/i`.
    - Blocks non-compliant strings and appends mandatory `[DISCLAIMER CVM]` on analytical outputs.
+4. **`EncryptedApiVaultRecordSchema`**:
+   - Validates AES-256-GCM envelope records (`keyId`, `provider` in `['BINANCE_READONLY', 'B3_CEI']`, `ciphertextHex`, `ivHex` length `24`, `authTagHex` length `32`, `createdAt` ISO datetime).
+5. **`BlackLittermanViewSchema`**:
+   - Validates Bayesian qualitative market views (`ticker`, `directionalShock` in `[-0.30, 0.30]`, `confidenceOmega` in `[0.01, 0.99]`, `rationaleDigest` max `280` chars).
+6. **`CoeOpportunityAuditSchema`**:
+   - Validates structured COE opportunity cost audits (`coeTicker`, `expectedReturnAnnual`, `cdiBenchmarkAnnual`, `liquidityDays >= 0`, `illiquidityPenaltyAnnual`, `netSpreadVsCdiAnnual`, `verdict` in `['SUBOPTIMAL_VS_CDI', 'COMPETITIVE']`).
 
 ---
 

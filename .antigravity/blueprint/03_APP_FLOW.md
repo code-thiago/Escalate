@@ -58,6 +58,14 @@ flowchart LR
     GUARD -- "Analytical Safe & WACC > g" --> OUTPUT["Render in EscalateTerminalShell (.tabular-financial) + [DISCLAIMER CVM]"]
 ```
 
+### 3.1 Custody Ingestion, AES-256-GCM Vault & Pre-LLM Digest Flows
+1. **`FLOW-INGESTION-SINACOR-01` (B3 CEI / SINACOR CSV & COE Opportunity Audit)**:
+   - Deterministic parser (`sinacor-b3-parser.ts`) normalizes Brazilian `1.234,56` locale strings into exact `Decimal` representations (`UnifiedAssetMathVector`) with `0` LLM tokens, and audits structured `COE` notes against net `CDI` spread and illiquidity penalties (`CoeOpportunityAuditSchema`).
+2. **`FLOW-VAULT-AES256-01` (Broker Read-Only API Envelope Encryption)**:
+   - Encrypts read-only broker keys (`BINANCE_READONLY`, `B3_CEI`) via Node native `aes-256-gcm` with unique 96-bit IVs (`24` hex chars) and 128-bit authentication tags (`32` hex chars), throwing `VAULT_AUTH_TAG_TAMPERED` on 1-byte tampering (`envelope-vault.ts`).
+3. **`FLOW-AGENT-DIGEST-01` (Zero-Raw-Data Pre-LLM Bridge)**:
+   - Summarizes multi-asset custody vectors into a deterministic `< 350 token` (`< 1400 chars`) JSON digest (`custody-quant-bridge.ts`) with exact `Decimal` net worth, 100% class allocation sum, Sharpe metrics, and `enforceCvmResolution20Grammar` verification before any LLM invocation.
+
 ---
 
 ## 4. Legacy Simulator & Scenario Card State Machines (Preserved)

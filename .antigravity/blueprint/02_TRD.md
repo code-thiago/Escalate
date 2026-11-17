@@ -76,6 +76,8 @@ flowchart TD
 * **128-bit Decimal Precision**: Configured via `Decimal.set({ precision: 36, rounding: Decimal.ROUND_HALF_EVEN })`.
 * **DCF Guard (`calculateDiscountedCashFlow`)**: Enforces `wacc > terminalGrowthRate`; throws `GORULES_MATH_GUARD: WACC must be strictly greater than g` if violated.
 * **Portfolio Sharpe (`calculatePortfolioSharpe`)**: Aggregates `UnifiedAssetMathVector[]` using exact string decimal quantities and unit prices, returning `totalValue` (`toFixed(2)`), `weightedReturn`, and `sharpeRatio`.
+* **Markowitz Covariance & Black-Litterman (`calculateMarkowitzCovariancePortfolio`, `applyBlackLittermanViews`)**: Computes exact multi-asset covariance matrices and blends bounded qualitative views (`[-0.15, 0.15]` cap) off the main event loop via `runQuantTaskIsolated` (`apps/api/src/modules/quant/quant-worker-pool.ts`).
+* **6-Hour Multi-Tenant Semantic Asset Cache (`SemanticAssetCache`)**: Coalesces concurrent and repeated qualitative ticker evaluations across a deterministic `21,600,000 ms` (`6h`) window (`apps/api/src/modules/agent/semantic-asset-cache.ts`), eliminating redundant LLM token expenditure across subscribers.
 
 ### 3.2 GoRules ZEN Engine Guardrails (`src/core/decision/graphs/`)
 1. **`cvm-suitability-guard.jdm.json`**:

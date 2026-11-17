@@ -1,6 +1,6 @@
 // apps/api/src/modules/quant/quant-engine.ts
 import Decimal from 'decimal.js';
-import { UnifiedAssetMathVector } from '@escalate/contracts';
+import { BlackLittermanView, UnifiedAssetMathVector } from '@escalate/contracts';
 
 Decimal.set({ precision: 36, rounding: Decimal.ROUND_HALF_EVEN });
 
@@ -75,4 +75,107 @@ export function calculatePortfolioSharpe(
     weightedReturn: Number(portfolioReturn.toFixed(6)),
     sharpeRatio: Number(sharpe.toFixed(4)),
   };
+}
+
+export function calculateMarkowitzCovariancePortfolio(
+  assets: UnifiedAssetMathVector[],
+  correlationMatrix: number[][],
+  riskFreeRateAnnual: number
+): {
+  totalValue: string;
+  weights: number[];
+  expectedReturnAnnual: number;
+  portfolioVolatilityAnnual: number;
+  sharpeRatio: number;
+} {
+  const n = assets.length;
+  if (
+    !Array.isArray(correlationMatrix) ||
+    correlationMatrix.length !== n ||
+    correlationMatrix.some((row) => !Array.isArray(row) || row.length !== n)
+  ) {
+    throw new Error('MARKOWITZ_INVALID_CORRELATION_MATRIX');
+  }
+
+  let totalPortfolioValue = new Decimal(0);
+  const positionValues: Decimal[] = [];
+
+  for (const a of assets) {
+    const val = new Decimal(a.quantityDecimal).mul(new Decimal(a.unitPriceDecimal));
+    positionValues.push(val);
+    totalPortfolioValue = totalPortfolioValue.plus(val);
+  }
+
+  if (totalPortfolioValue.isZero()) {
+    return {
+      totalValue: '0.00',
+      weights: assets.map(() => 0),
+      expectedReturnAnnual: 0,
+      portfolioVolatilityAnnual: 0,
+      sharpeRatio: 0,
+    };
+  }
+
+  const weightsDec: Decimal[] = positionValues.map((v) => v.div(totalPortfolioValue));
+
+  let expectedReturn = new Decimal(0);
+  for (let i = 0; i < n; i++) {
+    expectedReturn = expectedReturn.plus(weightsDec[i].mul(new Decimal(assets[i].expectedReturnAnnual)));
+  }
+
+  let portfolioVariance = new Decimal(0);
+  for (let i = 0; i < n; i++) {
+    const wi = weightsDec[i];
+    const sigmaI = new Decimal(assets[i].volatilityAnnual);
+    for (let j = 0; j < n; j++) {
+      const wj = weightsDec[j];
+      const sigmaJ = new Decimal(assets[j].volatilityAnnual);
+      const rhoIJ = new Decimal(correlationMatrix[i][j]);
+      const covTerm = wi.mul(wj).mul(sigmaI).mul(sigmaJ).mul(rhoIJ);
+      portfolioVariance = portfolioVariance.plus(covTerm);
+    }
+  }
+
+  const clampedVariance = portfolioVariance.isNegative() ? new Decimal(0) : portfolioVariance;
+  const portfolioVolatility = clampedVariance.sqrt();
+
+  const sharpe = portfolioVolatility.isZero()
+    ? new Decimal(0)
+    : expectedReturn.minus(new Decimal(riskFreeRateAnnual)).div(portfolioVolatility);
+
+  return {
+    totalValue: totalPortfolioValue.toFixed(2),
+    weights: weightsDec.map((w) => Number(w.toFixed(6))),
+    expectedReturnAnnual: Number(expectedReturn.toFixed(6)),
+    portfolioVolatilityAnnual: Number(portfolioVolatility.toFixed(6)),
+    sharpeRatio: Number(sharpe.toFixed(4)),
+  };
+}
+
+export function applyBlackLittermanViews(
+  equilibriumReturns: Record<string, number>,
+  views: BlackLittermanView[],
+  maxShockCap = 0.15
+): Record<string, number> {
+  const capDec = new Decimal(maxShockCap).abs();
+  const posteriorDec: Record<string, Decimal> = {};
+
+  for (const [ticker, eqReturn] of Object.entries(equilibriumReturns)) {
+    posteriorDec[ticker] = new Decimal(eqReturn);
+  }
+
+  for (const view of views) {
+    const basePi = posteriorDec[view.ticker] ?? new Decimal(equilibriumReturns[view.ticker] ?? 0);
+    const rawShock = new Decimal(view.directionalShock);
+    const clampedShock = Decimal.max(capDec.neg(), Decimal.min(capDec, rawShock));
+    const confidenceWeight = new Decimal(1).minus(new Decimal(view.confidenceOmega));
+    posteriorDec[view.ticker] = basePi.plus(clampedShock.mul(confidenceWeight));
+  }
+
+  const result: Record<string, number> = {};
+  for (const [ticker, decVal] of Object.entries(posteriorDec)) {
+    result[ticker] = Number(decVal.toFixed(6));
+  }
+
+  return result;
 }
